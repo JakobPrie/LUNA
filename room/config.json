@@ -1,0 +1,16 @@
+{
+    "Room_name": "",
+    "Server_IP": "",
+    "Network_Key": "",
+    "Local_storage": {
+        "module_storage":{
+            "phillips_hue":{
+                "Bridge-IP": ""
+            }
+        }
+    },
+    "Hotword_sensitivity": 0.4,
+    "Hotword_Audio_gain": 1.4,
+    "use_cameras": false,
+    "Cameras": {}
+}

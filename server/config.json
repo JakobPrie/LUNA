@@ -1,0 +1,44 @@
+{
+    "Local_storage": {
+        "LUNA_Modules_defined_Vocabulary": [],
+        "home_location": "Coburg",
+        "keys_to_distribute": [
+            "users",
+            "rooms",
+            "server_name",
+            "system_name",
+            "activation_phrase",
+            "home_location",
+            "LUNA_Modules_defined_Vocabulary",
+            "LUNA_telegram_allowed_id_table",
+            "LUNA_telegram_name_to_id_table",
+            "LUNA_telegram_id_to_name_table"
+        ],
+        "server_name": "LUNA_SERVER",
+        "LUNA_telegram_name_to_id_table": {},
+        "system_name": "LUNA",
+        "activation_phrase": "LUNA",
+        "users": {},
+        "LUNA_telegram_id_to_name_table": {},
+        "rooms": {},
+        "LUNA_telegram_allowed_id_table": {},
+        "rejected_telegram_messages": [],
+        "module_storage":{
+        }
+    },
+    
+    "use_facerec": false,
+    "use_cameras": false,
+    "Home_location": "",
+    "telegram_key": "",
+    "Server_name": "LUNA_SERVER",
+    "Open_mode": false,
+    "Activation_Phrase": "LUNA",
+    "telegram": true,
+    "Network_Key": "",
+    "use_interface": false,
+    "System_name": "LUNA",
+    "websocket": "secure",
+    "websocket_port": 19526,
+    "websocket_timeout": 20
+}
