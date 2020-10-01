@@ -22,7 +22,8 @@ def isValid(text):
             return False
     if ('text' in text and 'diktier' in text):
         return True
-    return False
+    else:
+        return False
 
 def getnum(str):
     map = {
