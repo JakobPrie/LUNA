@@ -11,6 +11,7 @@ import sys
 import os
 import io
 
+
 class HWobject:
     def __init__(self, file, user, local_storage):
         self.file = file
@@ -18,13 +19,14 @@ class HWobject:
         self.local_storage = local_storage
 
     def handle(self):
-        self.local_storage['LUNA_Hotword_detected'] = {'file':self.file, 'user':self.user}
-        self.bling_callback()
+        self.local_storage['LUNA_Hotword_detected'] = {'file': self.file, 'user': self.user}
+        #self.bling_callback()
 
     def bling_callback(self):
-        snowboydecoder.play_audio_file()
+        # snowboydecoder.play_audio_file()
         sys.stdout.write("\nlistening...")
         sys.stdout.flush()
+
 
 class Audio_Input:
     def __init__(self, serverconnection, local_storage):
@@ -65,10 +67,10 @@ class Audio_Input:
                 if hobject.file == file:
                     callbacks.append(hobject.handle)
 
-########### Die folgenden zwei Werte beeinflussen die Hotworderkennung erheblich; wenn sie unzuverlässig funktioniert, lohnt es sich, mit diesen Werten zu experimentieren! ###
-        sensitivity = sensitivity*len(models)
+        ########### Die folgenden zwei Werte beeinflussen die Hotworderkennung erheblich; wenn sie unzuverlässig funktioniert, lohnt es sich, mit diesen Werten zu experimentieren! ###
+        sensitivity = sensitivity  # *len(models)
         audio_gain = audio_gain
-###############################################################################################################################################################################
+        ###############################################################################################################################################################################
 
         snsrt = Thread(target=self.run_hotword_detection, args=(models, callbacks, sensitivity, audio_gain,))
         snsrt.daemon = True
@@ -79,9 +81,9 @@ class Audio_Input:
 
         # main loop
         self.detector.start(detected_callback=callbacks,
-                           audio_recorder_callback=self.audioRecorderCallback,
-                           interrupt_check=self.interrupt_callback,
-                           sleep_time=0.01)
+                            audio_recorder_callback=self.audioRecorderCallback,
+                            interrupt_check=self.interrupt_callback,
+                            sleep_time=0.01)
 
         self.detector.terminate()
 
@@ -112,15 +114,13 @@ class Audio_Input:
         return text
 
     def bling_callback(self):
-        snowboydecoder.play_audio_file()
+        # snowboydecoder.play_audio_file()
         sys.stdout.write("\nlistening...")
         sys.stdout.flush()
 
     def interrupt_callback(self):
         return self.stopped
 
-    def stop(self):
-        self.stopped = True
 
 class Audio_Output:
     # Verwaltet sämtliche Audio-Output-Streams des Clients, also z.B. Musik und
@@ -137,7 +137,7 @@ class Audio_Output:
         self.playback_audio_format = {}
         self.notification_audio_format = {}
         self.audio = pyaudio.PyAudio()
-        self.tts = Text_to_Speech(16750, 'de-DE')
+        self.tts = Text_to_Speech(17000, 'de-DE')
         self.stopped = False
 
     def start(self):
@@ -219,7 +219,7 @@ class Audio_Output:
     def say(self, text):
         # Gibt den gegebenen Text an die Text-to-Speech-Funktion weiter und wartet,
         # bis die Durchsage beendet ist.
-        #self.audioinput.detector.stopped = True # Kleiner Hack: Diese supercoole Zeile sorgt dafür, dass die Hotworderkennung nicht mithört xD
+        # self.audioinput.detector.stopped = True # Kleiner Hack: Diese supercoole Zeile sorgt dafür, dass die Hotworderkennung nicht mithört xD
         if text == '' or text == None:
             text = 'Das sollte nicht passieren. Eines meiner internen Module antwortet nicht mehr.'
         format, buffer = self.tts.say(str(text))
@@ -228,14 +228,14 @@ class Audio_Output:
         time.sleep(0.1)
         while not self.notification_audio_buffer == []:
             time.sleep(0.1)
-        #self.audioinput.detector.stopped = False
-        
+        # self.audioinput.detector.stopped = False
+
     def play(self, data):
         # Spielt gegebene wave-Audio-Stream-Daten ab
         for x in data:
             self.playback_audio_buffer.append(x)
 
-    def priority_play(self, data):
+    def priority_play(self, data): 
         # Im Grunde genommen das selbe wie play(), mit dem Unterschied, dass es den "Prioritäts"-Stream
         # benutzt: Hiermit abgespielter Ton unterbricht notfalls laufende low-priority-streams. Kann
         # aber Probleme im Zusammenhang mit der Sprachausgabe (die auch diesen high-priority-stream nutzt)
@@ -243,8 +243,13 @@ class Audio_Output:
         for x in data:
             self.notification_audio_buffer.append(x)
 
-    def set_format(self, format_dict):
-        self.playback_audio_format = format_dict
+    def stop_playback(self):
+        for item in self.playback_audio_buffer:
+            if item == 'Endederdurchsage':
+                self.playback_audio_buffer.remove(item)
+                break
+            else:
+                self.playback_audio_buffer.remove(item)
 
     def stop(self):
         self.stopped = True
