@@ -7,7 +7,9 @@ def isValid(text):
     text = text.lower().strip()
     if ('corona' in text or 'covid-19' in text) and ('info' in text or 'daten' in text or 'zahlen' in text):
         return True
-    return False
+    else:
+        return False
+    
 
 
 def handle(txt, luna, profile):
