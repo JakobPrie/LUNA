@@ -4,13 +4,11 @@
     "Network_Key": "",
     "Local_storage": {
         "module_storage":{
-            "phillips_hue":{
-                "Bridge-IP": ""
-            }
+            "next_change": "lower"
         }
     },
     "Hotword_sensitivity": 0.4,
-    "Hotword_Audio_gain": 1.4,
+    "Hotword_Audio_gain": 1.65,
     "use_cameras": false,
     "Cameras": {}
 }
