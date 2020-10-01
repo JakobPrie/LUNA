@@ -59,6 +59,27 @@ class TelegramInterface:
             self.bot.sendVoice(uid, open(converted_audio_filename, 'rb'))
             os.remove(converted_audio_filename)
             os.remove(voice_filename)
+            
+    def sendAudio(self, audio_file, uid, conv_id):
+        _, voice_filename = mkstemp(prefix='voice-', suffix='.wav')
+        _, converted_audio_filename = mkstemp(prefix='converted-audio-', suffix='.oga')
+        wavformat = audio_file['format']
+        wav = audio_file['file']
+        with wave.open(voice_filename, 'wb') as file:
+            file.setnchannels(wavformat['channels'])
+            file.setframerate(wavformat['rate'])
+            file.setsampwidth(2)
+            file.writeframes(wav)
+        cmd = ['/usr/bin/ffmpeg',
+               '-y',
+               '-loglevel', 'panic',
+               '-i', voice_filename,
+               '-acodec', 'libopus',
+               converted_audio_filename]
+        subprocess.call(cmd, shell=False)
+        self.bot.sendVoice(uid, open(converted_audio_filename, 'rb'))
+        os.remove(converted_audio_filename)
+        os.remove(voice_filename)
 
     def start(self):
         def on_chat_message(msg):
