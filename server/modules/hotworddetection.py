@@ -10,6 +10,11 @@ def handle(text, luna, profile):
 		room = luna.room_name
 			
 	if 'start' in text: 
-		luna.start_module(name='start_hotword_detection', room=room, text=text)
+		luna.change_hotworddetection(room=room, changing_to='on')
+		luna.say("Die Hotworddetection wurde eingeschaltet, ab jetzt höre ich wieder auf deine Komandos.", output='speech')
+		luna.say(f"Die Hotworddetection wurde im Raum {room} eingeschaltet.", output='telegram')
 	elif 'stopp' in text:
-		luna.start_module(name='stopp_hotword_detection', room=room, text=text)
+		luna.change_hotworddetection(room=room, changing_to='off')
+		luna.say("Die Hotworddetection wurde ausgeschaltet, ab jetzt höre ich nicht mehr auf deine Komandos.", output='speech')
+		luna.say(f"Die Hotworddetection wurde im Raum {room} ausgeschaltet, ab jetzt höre ich nicht mehr auf deine Komandos.", output='telegram')
+		
