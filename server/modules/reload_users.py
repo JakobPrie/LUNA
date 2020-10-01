@@ -4,7 +4,7 @@ SECURE = False
 
 def isValid(text):
     text = text.lower()
-    if 'lad' in text or 'lade' in text and 'nutzer' in text:
+    if 'lade' in text and 'nutzer' in text and 'neu' in text:
         return True
     else:
         return False
