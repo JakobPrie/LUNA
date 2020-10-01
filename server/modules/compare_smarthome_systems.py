@@ -205,26 +205,6 @@ def isValid(text):
     if 'jarvis' in text or 'alexa' in text or 'cortana' in text or 'siri' in text:
         return True
 
-class Luna:
-    def __init__(self):
-        self.local_storage = {}
-        self.user = 'Baum'
-        self.analysis = {'room': 'None', 'time': {'month': '08', 'hour': '06', 'year': '2018', 'minute': '00', 'day': '27'}, 'town': 'None'}
-
-    def say(self, text):
-        print (text)
-    def listen(self):
-        neuertext = input()
-        return neuertext
-
-def main():
-    profile = {}
-    luna = Luna()
-    handle('Kennst du Cortana', luna, profile)
-    
-    
-if __name__ == "__main__":
-    main()
     
 def get_name_string(luna):
     if luna.local_storage['system_name'].lower() == 'luna':
