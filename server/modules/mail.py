@@ -1,11 +1,3 @@
-#############################################################
-# Dieses Modul lässt LUNA mails vorschreiben und öffnet     #
-# diese dann in 'claws-mail'. Dazu muss 'claws-mail'        #
-# installiert sein. Zum Aufrufen nutze 'LUNA mail Betreff'  #
-# wobei Betreff durch den Betreff der Mail ersetzt werden   #
-# soll. Dann die Mail diktieren und zum Schluss nur das     #
-# Wort 'fertig' sagen.                                      #
-#############################################################
 
 import os
 import tempfile
