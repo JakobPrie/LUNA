@@ -1,25 +1,46 @@
-
-from module_skills import get_enumerate, delete_duplications, assamble_new_items
 import traceback
 import random
 import traceback
 
+from module_skills import get_enumerate, delete_duplications, assamble_new_items, assamble_array, get_text_beetween
 
 # Priorität gesetzt, da ansonsten manchmal das modul reload_modules.py aufgerufen wurde.
 PRIORITY = 2
 SECURE = True
 
 
+def isValid(text):
+    text = text.lower()
+    if 'to' in text and 'do' in text and 'liste' in text:
+        return False
+    elif 'setz' in text or 'setzte' in text or 'schreib' in text or 'schreibe' in text or 'füg' in text or 'füge' in text:
+        return True
+    elif ('was' in text and 'steht' in text and 'auf' in text) or ('gib' in text and 'aus' in text):
+        return True
+    elif ('lösch' in text or 'leere' in text) and 'einkaufsliste' in text:
+        return True
+    elif ('send' in text or 'schick' in text or 'schreib' in text) and 'einkaufsliste' in text:
+        return True
+    elif 'räum' in text and 'auf' in text and 'einkaufsliste' in text:
+        return True
+    else:
+        return False
+        
+
 def get_item(text, luna):
     text = luna.text
-    text = text.replace('Und', 'und') # einfach nur zur Sicherheit, damit die Item-Trennung später auch sicher funktioniert
+    text = text.replace('Und',
+                        'und')  # einfach nur zur Sicherheit, damit die Item-Trennung später auch sicher funktioniert
     text = text.replace(' g ', 'g ')
     text = text.replace(' gram ', 'g ')
     text = text.replace(' kg ', 'kg ')
     text = text.replace(' kilogram ', 'kg ')
+    text = text.replace('eine ', '')
+    text = text.replace('einen ', '')
+    text = text.replace('ein ', '')
     item = []
     index = 0
-    
+
     # es wird ermittel, wo die Nennung der items beginnt und wo sie endet
     if 'setz auf die einkaufsliste ' in text:
         text.replace('setz auf die Einkaufsliste ', (''))
@@ -45,7 +66,7 @@ def get_item(text, luna):
                 index = i + 1
                 founded = True
             i += 1
-    
+
     elif 'lösch' in text:
         text = text.split(' ')
         founded = False
@@ -56,7 +77,7 @@ def get_item(text, luna):
                 index = i + 1
                 founded = True
             i += 1
-    
+
     else:
         index = -1
         luna.say('Ich habe leider nicht verstanden, was ich auf die Liste setzen soll. '
@@ -86,41 +107,31 @@ def get_item(text, luna):
                 item.append(text[point])
             point += 1
     """
-    print('Index: {}'.format(index))
+
     # Der folgende Alorithmus trennt die genannten Items ganz stumpf bei jedem 'und'
     if index != -1:
         aussage_item = ''
         position = index
         stop = False
-        #print('Länge: {}'.format(len(text)))
         while stop == False:
-            #print('Position: {}, Text: {}'.format(position, text[position]))
-            if text[position] == 'auf' or text[position] == 'zu' or text[position] == 'zur' or text[position] == 'aus' or text[position] == 'von':
-                #print('stop = True')
-                item.append(aussage_item)
+            if text[position] == 'auf' or text[position] == 'zu' or text[position] == 'zur' or text[
+                position] == 'aus' or text[position] == 'von':
+
+                item.append(aussage_item.strip())
                 stop = True
             elif text[position] == 'und':
-                #print('aussage wird zu item hinzugefügt')
-                item.append(aussage_item)
+                item.append(aussage_item.strip())
                 aussage_item = ''
             else:
-                #print('aussage erweitert')
                 aussage_item += text[position] + ' '
-            
-            #print()
+
             position += 1
-    #print(item)
-    
     duplicates_in_items = [item[i] for i in range(len(item)) if not i == item.index(item[i])]
     if duplicates_in_items:
-        luna.say('Du hast {} doppelt genannt. Soll ich deine doppelt genannten Sachen einfach zusammenzählen?'.format(get_enumerate(delete_duplications(duplicates_in_items))))
-        response = luna.listen()
-        if 'ja' in response:
-            item = assamble_new_items(item, duplicates_in_items)
-        else:
-            item = delete_duplications(item)
+        item = assamble_array(item)
     print('Item in get_item(): {}'.format(item))
     return item
+
 
 def get_aussage_gemeinsam(text, luna):
     aussage = ''
@@ -129,11 +140,11 @@ def get_aussage_gemeinsam(text, luna):
         aussage = get_enumerate(einkaufsliste)
     return aussage
 
+
 def get_aussage(text, luna):
     nutzer = luna.user
     nutzerdictionary = luna.local_storage.get('users')
     nd = nutzerdictionary.get(nutzer)
-    #print(nd)
     aussage = ''
     if 'einkaufsliste' in nd.keys():
         einkaufsliste = nd['einkaufsliste']
@@ -141,172 +152,151 @@ def get_aussage(text, luna):
 
     return aussage
 
+
 def handle(text, luna, profile):
     text = text.lower()
     text = text.replace('setze', ('setz'))
-    
-    if 'setz' in text or 'schreib' in text:
+
+    if 'setz' in text or 'schreib' in text or 'füg' in text:
         item = get_item(text, luna)
+        own_list = False
         if 'eigene' in text or 'meine' in text:
-            if text != '_UNDO_':
-                ausgabe = ''
-                nutzer = luna.user
-                nutzerdictionary = luna.local_storage.get('users')
-                nd = nutzerdictionary.get(nutzer)
-
-                if 'einkaufsliste' in nd.keys():
-                    double_items = get_double_items(item, nd['einkaufsliste'], luna)
-                    if double_items:
-                        luna.say('Folgende Items befinden sich bereits in deiner Einkaufsliste: {}. Soll ich sie dennoch auf die Einkaufsliste setzen?'.format(get_enumerate(double_items)))
-                        response = luna.listen()
-                        if 'ja' in response or 'gerne' in response:
-                            neue_einkaufsliste = assamble_new_items(nd['einkaufsliste'], item)
-                            nd['einkaufsliste'] = neue_einkaufsliste
-                        else:
-                            for i in double_items:
-                                item.remove(i)
-                            if not item:
-                                #luna.say('Alles klar, ich setze nichts auf die Einkaufsliste.')
-                                pass
-                            else:
-                                neue_einkaufsliste = assamble_new_items(nd['einkaufsliste'], item)
-                                nd['einkaufsliste'] = neue_einkaufsliste
-                                luna.say('Alles klar, ich habe nur {} auf die Einkaufsliste gesetzt.'.format(get_enumerate(item)))
-
-                    else:
-                        for i in item:
-                            nd['einkaufsliste'].append(i)
-                                
-                        
-                else:
-                    nd['einkaufsliste'] = []
-                    for i in item:
-                        nd['einkaufsliste'].append(i)
-                
-                ausgabe = random.choice(['In Ordnung, ich habe ' + get_enumerate(item) + ' zu deiner Einkaufsliste hinzugefügt.',
-                                         'Alles klar, ich habe ' + get_enumerate(item) + ' auf deine Einkaufsliste gesetzt.',
-                                         get_enumerate(item) + ' zu deiner Einkaufsliste hinzugefügt.',
-                                         'In Ordnung, {}, ich habe {} auf deine Einkaufsliste gesetzt.'.format(luna.user, get_enumerate(item))])
-                if not item:
-                    ausgabe = 'Ich habe nichts auf deine Einkaufsliste gesetzt.'
-                luna.say(ausgabe)
+            nutzer = luna.user
+            nutzerdictionary = luna.local_storage.get('users')
+            nd = nutzerdictionary.get(nutzer)
+            if 'einkaufsliste' not in nd.keys():
+                nd['einkaufsliste'] = []
+            einkaufsliste = nd['einkaufsliste']
+            own_list = True
         else:
-            print(item)
-            if text != '_UNDO_':
-                ausgabe = ''
-                einkaufsliste = {}
-                if 'einkaufsliste' in luna.local_storage.keys():
-                    double_items = get_double_items(item, luna.local_storage['einkaufsliste'], luna)
-                    if double_items:
-                        luna.say('Folgende Items befinden sich bereits in der Einkaufsliste: {}. Soll ich sie dennoch manche auf die Einkaufsliste setzen?'.format(get_enumerate(double_items)))
-                        response = luna.listen()
-                        if 'ja' in response or 'gerne' in response:
-                            neue_einkaufsliste = assamble_new_items(luna.local_storage['einkaufsliste'], item)
-                            print(neue_einkaufsliste)
-                            luna.local_storage['einkaufsliste'] = neue_einkaufsliste
-                        else:
-                            for i in double_items:
-                                item.remove(i)
-                            neue_einkaufsliste = assamble_new_items(luna.local_storage['einkaufsliste'], item)
-                            print(neue_einkaufsliste)
-                            luna.local_storage['einkaufsliste'] = neue_einkaufsliste
+            if 'einkaufsliste' not in luna.local_storage.keys():
+                luna.local_storage['einkaufsliste'] = []
+            einkaufsliste = luna.local_storage['einkaufsliste']
+        print(einkaufsliste)
+        if einkaufsliste:
+            double_items = get_double_items(item, einkaufsliste, luna)
+            print(f"--------------Dopplungen gefunden: {double_items}")
+            if double_items:
+                if len(double_items) > 1:
+                    luna.say(
+                        '{} befinden sich bereits auf der einkaufsliste. Soll ich sie dennoch auf die Einkaufsliste setzen?'.format(
+                            get_enumerate(double_items)))
+                else:
+                    luna.say(
+                        '{} befindet sich bereits auf der einkaufsliste. Soll ich sie dennoch auf die Einkaufsliste setzen?'.format(
+                            get_enumerate(double_items)))
+                response = luna.listen()
+                if 'nur' in text and 'nicht' in text:
+                    item.remove(get_item(get_text_beetween('nur', text, end_word='nicht', output='String')))
+                    print(f"item nach remove nur nicht {item}")
+                elif 'ja' in response or 'gerne' in response or 'bitte' in response:
+                    for i in item:
+                        einkaufsliste.append(i)
+                    neue_einkaufsliste = assamble_array(einkaufsliste)
+                    einkaufsliste = neue_einkaufsliste
+                    print(f"neue_einkaufsliste: {neue_einkaufsliste}")
+                else:
+                    print(f"vor for i in double item: {item}")
+                    for i in double_items:
+                        item.remove(i)
+                    if not item:
+                        luna.say('Alles klar, ich setze nichts auf die Einkaufsliste.')
+                        pass
                     else:
                         print(item)
                         for i in item:
-                            luna.local_storage['einkaufsliste'].append(i)
-                            
-                else:
-                    luna.local_storage['einkaufsliste'] = []
-                    for i in item:
-                        luna.local_storage['einkaufsliste'].append(i)
-                        
-                ausgabe = random.choice(['In Ordnung, ich habe ' + get_enumerate(item) + ' zur gemeinsamen Einkaufsliste hinzugefügt.',
-                                         'Alles klar, ich habe ' + get_enumerate(item) + ' auf die gemeinsame Einkaufsliste gesetzt.',
-                                         'Alles klar, {}, ich habe '.format(luna.user) + get_enumerate(item) + ' zur gemeinsamen Einkaufsliste hinzugefügt.',
-                                         'In Ordnung, {}, ich habe '.format(luna.user) + get_enumerate(item) + ' auf die gemeinsame Einkaufsliste gesetzt.'])
-                if not item:
-                    ausgabe = 'Ich habe nichts auf die gemeinsame Einkaufsliste gesetzt.'
-                luna.say(ausgabe)
+                            einkaufsliste.append(i)
+                        neue_einkaufsliste = assamble_array(einkaufsliste)
+                        einkaufsliste = neue_einkaufsliste
+                        luna.say('Alles klar, ich habe nur {} auf die Einkaufsliste gesetzt.'.format(
+                            get_enumerate(item)))
+
+            else:
+                print(f"----------{item}")
+                for i in item:
+                    einkaufsliste.append(i)
+
+        else:
+            einkaufsliste = []
+            print(item)
+            for i in item:
+                einkaufsliste.append(i)
+        
+        einkaufsliste = assamble_array(einkaufsliste)
+        
+        if own_list:
+            luna.say("Alles klar. Ich habe {} auf deine Einkaufsliste gesetzt.".format(get_enumerate(item)))
+            nd['einkaufsliste'] = einkaufsliste
+        else:
+            luna.say("Alles klar. Ich habe {} auf die gemeinsame Einkaufsliste gesetzt.".format(get_enumerate(item)))
+            luna.local_storage['einkaufsliste'] = einkaufsliste
+
 
     elif 'auf' in text and 'steht' in text and 'was' in text:
         if 'meiner' in text or 'eigenen' in text:
             aussage = get_aussage(text, luna)
-            if aussage != '':
-                ausgabe = 'Auf der Liste steht für dich {}, {}.'.format(aussage, luna.user)
-            else:
-                ausgabe = random.choice(['Für dich steht aktuell nichts auf der Einkaufsliste.',
-                                         'Für dich steht aktuell nichts auf der Einkaufsliste, {}.'.format(luna.user),
-                                         'Für dich steht gerade nichts auf der Einkaufsliste.',
-                                         'Für dich steht gerade nichts auf der Einkaufsliste, {}.'.format(luna.user)])
-            luna.say(ausgabe)
         else:
             aussage = get_aussage_gemeinsam(text, luna)
+        # wenn man den Befehl über Telegram aufruft, mach die schick-Funktion mehr Sinn
+        if luna.telegram_call:
+            handle('schick einkaufsliste', luna, profile)
+        else:
             if aussage != '':
                 ausgabe = 'Auf der Liste steht für dich {}.'.format(aussage)
             else:
-                ausgabe = random.choice(['Für dich steht aktuell nichts auf der Einkaufsliste.',
-                                         'Für dich steht aktuell nichts auf der Einkaufsliste, {}.'.format(luna.user),
-                                         'Für dich steht gerade nichts auf der Einkaufsliste.',
-                                         'Für dich steht gerade nichts auf der Einkaufsliste, {}.'.format(luna.user)])
+                ausgabe = 'Für dich steht aktuell nichts auf der Einkaufsliste.'
             luna.say(ausgabe)
-    
+
     elif 'schick' in text and 'einkaufsliste' in text and 'und' in text and ('lösch' in text or 'leer' in text):
         i = ''
         if 'meine' in text or 'eigene' in text:
             i = 'meine'
         else:
             i = 'gemeinsame'
-            
+
         text = "schick {} einkaufsliste".format(i)
         handle(text, luna, profile)
         text = "leere {} einkaufsliste".format(i)
         handle(text, luna, profile)
-        
-    
+
     elif 'lösch' in text and ('aus' in text or 'von' in text) and 'einkaufsliste' in text:
         items = get_item(text, luna)
-        print(items)
-        if 'meine' in text or 'eigene' in text:
+        own_list = False
+        if 'eigene' in text or 'meine' in text:
             nutzer = luna.user
             nutzerdictionary = luna.local_storage.get('users')
             nd = nutzerdictionary.get(nutzer)
-            if 'einkaufsliste' in nd.keys():
+            if 'einkaufsliste' not in nd.keys():
+                nd['einkaufsliste'] = []
                 einkaufsliste = nd['einkaufsliste']
-                deleted = []
-                for item in items:
-                    try:
-                        einkaufsliste.remove(item)
-                        deleted.append(item)
-                    except:
-                        traceback.print_exc()
-                        luna.say('Scheinbar ist {} nicht in der Einkaufsliste vorhanden und konnte daher nicht gelöscht werden.'.format(item))
-                    if len(deleted) is not -1:
-                        luna.say(get_enumerate(deleted) + ' wurde von deiner Einkaufsliste gelöscht.')
-                    else:
-                        luna.say('Da ist wohl was schief gelaufe. Ich konnte leider nichts aus der Einkaufsliste löschen.')
-            else:
-                luna.say('Ich kann das leider nicht aus deiner Einkaufsliste löschen, da sie leer ist.')
+            own_list = True
         else:
-            if 'einkaufsliste' in luna.local_storage.keys():
+            if 'einkaufsliste' not in luna.local_storage.keys():
+                luna.local_storage['einkaufsliste'] = []
                 einkaufsliste = luna.local_storage['einkaufsliste']
-                deleted = []
-                for item in items:
-                    try:
-                        einkaufsliste.remove(item)
-                        deleted.append(item)
-                    except:
-                        traceback.print_exc()
-                        luna.say('Scheinbar ist {} nicht in der Einkaufsliste vorhanden und konnte daher nicht gelöscht werden.'.format(item))
-                    if len(deleted) is not -1:
-                        luna.say(get_enumerate(deleted) + ' wurde von der gemeinsamen Einkaufsliste gelöscht.')
-                    else:
-                        luna.say('Da ist wohl was schief gelaufe. Ich konnte leider nichts aus der Einkaufsliste löschen.')
-            else:
-                luna.say('Ich kann das leider nicht aus deiner Einkaufsliste löschen, da sie leer ist.')
-        
-    
-    elif ('lösche' in text or 'leere' in text) and 'einkaufsliste' in text and not 'aus' in text:
-        #print('lösche and einkaufsliste in text')      
+
+        if einkaufsliste:
+            deleted = []
+            for item in items:
+                try:
+                    einkaufsliste.remove(item)
+                    deleted.append(item)
+                except:
+                    traceback.print_exc()
+                    luna.say(
+                        'Scheinbar ist {} nicht in der Einkaufsliste vorhanden und konnte daher nicht gelöscht werden.'.format(
+                            item))
+                if len(deleted) != -1:
+                    luna.say(get_enumerate(deleted) + ' wurde von deiner Einkaufsliste gelöscht.')
+                else:
+                    luna.say(
+                        'Da ist wohl was schief gelaufe. Ich konnte leider nichts aus der Einkaufsliste löschen.')
+        else:
+            luna.say('Ich kann das leider nicht aus deiner Einkaufsliste löschen, da sie leer ist.')
+
+
+    elif ('lösch' in text or 'leer' in text) and 'einkaufsliste' in text and not 'aus' in text:
+        # print('lösche and einkaufsliste in text')
         word = 'geleert'
         if 'lösche' in text:
             word = 'gelöscht'
@@ -328,7 +318,7 @@ def handle(text, luna, profile):
                 luna.say('Die Einkaufsliste wurde {}.'.format(word))
             else:
                 luna.say('Die Einkaufliste ist schon leer.')
-                
+
     elif 'send' in text or 'schick' in text or 'schreib' in text:
         user = ''
         if 'meine' in text or 'eigene' in text:
@@ -344,8 +334,24 @@ def handle(text, luna, profile):
         else:
             items = luna.local_storage.get('einkaufsliste')
         send_to_telegram(items, user, luna)
-    
-    
+
+    elif 'räum' in text and 'auf' in text:
+        # eigentlich sollte es nicht passieren, dass Sachen unordentlich
+        # in der einkaufsliste stehen, aber sollte es doch sein, hat man
+        # die möglichkeit manuell einzugreifen
+        luna.say('Einen Moment bitte.')
+        if 'meine' in text:
+            nutzer = luna.user
+            nutzerdictionary = luna.local_storage.get('users')
+            nd = nutzerdictionary.get(nutzer)
+            nd['einkaufsliste'] = assamble_array(nd['einkaufsliste'])
+            luna.say('Deine Einkaufsliste wurde aufgeräumt!')
+        else:
+            luna.local_storage['einkaufsliste'] = assamble_array(luna.local_storage['einkaufsliste'])
+
+            luna.say('Die Einkaufsliste wurde aufgeräumt!')
+
+
 def send_to_telegram(items, user, luna):
     if items == None:
         items = []
@@ -355,31 +361,220 @@ def send_to_telegram(items, user, luna):
         aussage = aussage + '- ' + i + '\n'
     aussage += '--------------------'
     luna.say(aussage, output='telegram')
-         
+
+
 def get_double_items(items, einkaufsliste, luna):
-    double = []
+    print("\n\n------------------\n")
+    print(einkaufsliste)
     print(items)
+    print("\n-------------------")
+    double = []
     if einkaufsliste is None:
         double = []
     else:
         for item in items:
             anz = item.split(' ', 1)[0]
+            try:
+                anz = int(anz)
+            except:
+                pass
             if type(anz) is int:
                 item = item.split(' ', 1)[1]
             if item in einkaufsliste:
                 double.append(item)
     return double
-            
-def isValid(text):
-    text = text.lower()
-    if 'to' in text and 'do' in text and 'liste' in text:
-        return False
-    elif 'setz' in text or 'setzte' in text or 'schreib' in text or 'schreibe' in text or 'füg' in text or 'füge' in text:
-        return True
-    elif ('was' in text and 'steht' in text and 'auf' in text) or ('gib' in text and 'aus' in text):
-        return True
-    elif ('lösch' in text or 'leere' in text) and 'einkaufsliste' in text:
-        return True
-    elif ('send' in text or 'schick' in text or 'schreib' in text) and 'einkaufsliste' in text:
-        return True
+
+
+
+def batchGen(batch):
+    """
+    With the batchGen-function you can generate fuzzed compare-strings
+    with the help of a easy syntax:
+        "Wann [fährt|kommt] [der|die|das] nächst[e,er,es] [Bahn|Zug]"
+    is compiled to a list of sentences, each of them combining the words
+    in the brackets in all different combinations.
+    This list can then fox example be used by the batchMatch-function to
+    detect special sentences.
+    """
+    outlist = []
+    ct = 0
+    while len(batch) > 0:
+        piece = batch.pop()
+        if "[" not in piece and "]" not in piece:
+            outlist.append(piece)
+        else:
+            frontpiece = piece.split("]")[0]
+            inpiece = frontpiece.split("[")[1]
+            inoptns = inpiece.split("|")
+            for optn in inoptns:
+                rebuild = frontpiece.split("[")[0] + optn
+                rebuild += "]".join(piece.split("]")[1:])
+                batch.append(rebuild)
+    return outlist
+
+def batchMatch(batch, match):
+    t = False
+    if isinstance(batch, str):
+        batch = [batch]
+    for piece in batchGen(batch):
+        if piece.lower() in match.lower():
+            t = True
+    return t
+
+
+def get_enumerate(array):
+    # print(array)
+    new_array = []  # array=['Apfel', 'Birne', 'Gemüse', 'wiederlich']
+    for item in array:
+        new_array.append(item.strip(' '))
+
+    # print(new_array)
+    ausgabe = ''
+    # print('Länge: {}'.format(len(new_array)))
+    if len(new_array) == 0:
+        pass
+    elif len(new_array) == 1:
+        ausgabe = array[0]
+    else:
+        for item in range(len(new_array) - 1):
+            ausgabe += new_array[item] + ', '
+        ausgabe = ausgabe.rsplit(', ', 1)[0]
+        ausgabe = ausgabe + ' und ' + new_array[-1]
+    return ausgabe
     
+def assamble_new_items(array, new_items):
+    new_array = []
+    for item in new_items:
+        # Name des items von der Anzahl trennen
+        if len(item.split(' ')) > 1:
+            # Durch die 1 in der runden Klammer, wird nur beim ersten Space
+            # das Wort getrennt. Das ist daher von Vorteil, da wir so später
+            # beim Zusammenfügen der Anzahl und des Namens nicht jedes Wort
+            # einzeln hinzufügen müssen
+            item_name = item.split(' ', 1)[1]
+        else:
+            item_name = item
+
+        for field in array:
+            if len(field.split(' ')) > 1:
+                field_name = field.split(' ', 1)[1]
+            else:
+                field_name = field
+
+            # Die folgende if-Abfrage ist notwendig, um auch "Banane" und "Bananen"
+            # zusammen zu zählen
+            if field_name.lower().rstrip(field_name.lower()[-1]) == item_name.lower():
+                item_name = item_name + "n"
+            if field_name.lower() == item_name.lower():
+                # Festlegen der Anzahl des jeweiligen Feldes der beiden Arrays und
+                # des letzten Buchstaben, den wir später noch brauchen werden
+                n_anz = item.split(' ', 1)[0]
+                try:
+                    n_item = item.split(' ', 1)[1]
+                except:
+                    n_item = item
+                a_anz = field.split(' ', 1)[0]
+                last_letter = item[-1]
+                # Bisher war die jeweilige Anzahl (z.B. 2) noch als String (also
+                # Zeichen) und nicht als int (also Zahl) gespeichert. Man kann
+                # aber nur mit Zahlen rechnen, daher versuche ich anschließend
+                # die Strings in Integer zu konvertieren. "try" wird benötigt,
+                # da zum Beispiel bei "Creme Legere" das 1. Feld nach dem split
+                # keine Zahl, sondern ein Wort ist
+                try:
+                    n_anz = int(n_anz)
+                except:
+                    # keine Zahl? Dann gibt es von dem Item nur eines
+                    n_anz = 1
+
+                try:
+                    a_anz = int(a_anz)
+                except:
+                    a_anz = 1
+
+                if type(n_anz) != int:
+                    n_item = item
+
+                new_anz = n_anz + a_anz
+                item = str(new_anz) + " " + n_item
+
+                if last_letter == "e":
+                    item = item + "n"
+
+        new_array.append(item)
+        # folgende Zeile löscht Dopplungen, die durch das Zusammenfügen von "Banane" und "Bananen" zu stande kommt
+        new_array = delete_duplications(new_array)
+    return new_array
+
+
+def assamble_array(array):
+    print(f"Beim Start von assamble_array: {array}")
+    temp_array = []
+    temp_array0 = array
+    for item in temp_array0:
+        item = item.replace('1', '')
+        item = item.replace('2', '')
+        item = item.replace('3', '')
+        item = item.replace('4', '')
+        item = item.replace('5', '')
+        item = item.replace('6', '')
+        item = item.replace('7', '')
+        item = item.replace('8', '')
+        item = item.replace('9', '')
+        item = item.replace('0', '')
+        item = item.strip()
+        temp_array.append(item)
+    duplications = delete_duplications(temp_array)
+    temp3_array = []
+    if len(duplications) >= 1:
+        temp2_array = assamble_new_items(array, duplications)
+        for item in temp2_array:
+            try:
+                anz = int(item.split(' ', 1)[0])
+            except:
+                anz = 1
+            anz -= 1
+
+            if anz == 1:
+                item = item.split(' ')[1]
+            else:
+                item = str(anz) + " " + item.split(' ', 1)[1]
+            temp3_array.append(item)
+        
+    print(temp3_array)
+
+
+    return temp3_array
+    
+def delete_duplications(array):
+    new_array = list(set(array))
+    return new_array
+    
+
+def get_text_beetween(start_word, text, end_word='', output='array'):
+    ausgabe = []
+    index = -1
+    text = text.split(' ')
+    for i in range(len(text)):
+        if text[i] is start_word:
+            index = i + 1
+    if index is not -1:
+        if end_word is '':
+            while index <= len(text):
+                ausgabe.append(text[index])
+                index += 1
+        else:
+            founded = False
+            while index <= len(text) and not founded:
+                if text[index] is end_word:
+                    founded = True
+                else:
+                    ausgabe.append(text[index])
+                    index += 1
+    if output is 'array':
+        return ausgabe
+    elif output is 'String':
+        ausgabe_neu = ''
+        for item in ausgabe:
+            ausgabe += item + ' '
+        return ausgabe
