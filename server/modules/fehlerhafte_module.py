@@ -12,7 +12,10 @@ def handle(text, luna, profile):
 		if module['status'] == 'error':
 			faulty_list.append(module['name'])
 	print(faulty_list)
-	luna.say('Folgende Module konnten nicht geladen werden: ')
-	luna.say(luna.enumerate(faulty_list))
+	if len(faulty_list) == 0:
+		luna.say('Alle Module konnten korrekt geladen werden.')
+	else:
+		luna.say('Folgende Module konnten nicht geladen werden: ')
+		luna.say(luna.enumerate(faulty_list))
 	
 
