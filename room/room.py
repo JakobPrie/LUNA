@@ -14,6 +14,10 @@ import sys
 import os
 from urllib.request import urlopen, Request
 import urllib.parse
+#nur in der testphase
+import wave
+import time
+#import hotworddetection
 
 
 class Modules:
@@ -253,6 +257,32 @@ class LUNA:
         srt = Thread(target=self.handle_online_requests)
         srt.daemon = True
         srt.start()
+        
+    def hotword_detected(self):
+        # Der Name wurde bewusst mit Hinsicht auf weitere Reaktionen (wie z.B. Leuchten, etc.) gewählt
+        
+        #playing Bling-Sound
+        TOP_DIR = os.path.dirname(os.path.abspath(__file__))
+        DETECT_DING = os.path.join(TOP_DIR, "resources/snowboy/resources/ding.wav")
+        DETECT_DONG = os.path.join(TOP_DIR, "resources/snowboy/resources/dong.wav")
+
+        audiofile = wave.open(DETECT_DONG, 'rb')
+        chunk = 1024
+        frame_rate = audiofile.getframerate() * 2
+        
+        format = {'format': 8,
+                  'channels': 1,
+                  'rate': frame_rate,
+                  'chunk': chunk}
+        
+        wav_data = audiofile.readframes(chunk)
+        audio_buffer = []
+        while wav_data:
+            audio_buffer.append(wav_data)
+            wav_data = audiofile.readframes(chunk)
+        audio_buffer.append('Endederdurchsage')
+        self.Audio_Output.notification_audio_format = format
+        self.Audio_Output.priority_play(audio_buffer)
 
     def handle_voice_call(self, text, user):
         self.Conversation.transform_blockage(text, user)
@@ -268,6 +298,7 @@ class LUNA:
         if response == False:
             #Luna.say(text, 'Das habe ich leider nicht verstanden.', Luna.room_name, user)
             Luna.Conversation.end(text)
+            #hotworddetection()
 
     def handle_online_requests(self):
         say_requests = []
@@ -303,10 +334,8 @@ class LUNA:
                     
             # PLAY
             # Neue Aufträge einholen
-            #print("handle online request play")
             new_play_requests = self.Serverconnection.readanddelete('LUNA_room_play')
             if new_play_requests is not None:
-                print("neue Aufträge zum Abspielen gefunden")
                 for request in new_play_requests:
                     play_requests.append(request)
             # Zu cancelnde Aufträge bearbeiten
@@ -322,12 +351,8 @@ class LUNA:
                         self.Serverconnection.send({'LUNA_room_confirms_cancel_play_{}'.format(request):False})
                         cancel_requests.remove(request)
             # Aufträge bearbeiten
-            #print("Play_requests: {}".format(play_requests))
             for request in play_requests:
-                print(request['audiofile'])
-                print("Auftrag zum Abspielen einer Audiodatei wird bearbeitet")
                 if self.Conversation.query(request['original_command']) == True:
-                    self.Conversation.begin(request['original_command'], request['user'])
                     self.play(request['original_command'],request['audiofile'],request['room'],request['user'])
                     self.Serverconnection.send({'LUNA_room_confirms_play_{}'.format(request['original_command']):True})
                     play_requests.remove(request)
@@ -336,7 +361,6 @@ class LUNA:
             # Neue Aufträre einholen
             new_listen_requests = self.Serverconnection.readanddelete('LUNA_room_listen')
             if new_listen_requests is not None:
-                print("Neue Play-Aufträge eingeholt")
                 for request in new_listen_requests:
                     for existing_request in listen_requests:
                         if request['original_command'] == existing_request['original_command']:
@@ -358,7 +382,6 @@ class LUNA:
                         cancel_requests.remove(request)
             # Aufträge bearbeiten
             for request in listen_requests:
-                print("Play-Aufträge werden bearbeitet")
                 if self.Conversation.query(request['original_command']) == True:
                     self.Conversation.begin(request['original_command'], request['user'])
                     response = self.listen(request['original_command'], request['user'])
@@ -419,7 +442,6 @@ class LUNA:
             time.sleep(0.03)
             
     def request_play(self, original_command, audiofile, raum, user, output):
-        print("--request_play in LUNA in room.py")
         self.Serverconnection.send_buffer({'LUNA_server_play':[{'original_command':original_command,'audiofile':audiofile, 'room':raum,'user':user,'output':output}]})
         while not self.Serverconnection.readanddelete('LUNA_server_confirms_play_{}'.format(original_command)) == True:
             if not self.Serverconnection.connected:
@@ -511,12 +533,11 @@ class LUNA:
         self.Audio_Output.say(text)
         
     def play(self, original_command, audiofile, room, user):
-        print("--play in LUNA in room.py")
-        self.Conversation.begin(original_command, user)
+        #self.Audio_Output.say("Das ist ein Test, mal gucken, ob es klappt. Und ich werde jetzt immer weiter reden, damit ich nicht vor der Benachrichtigung aufhöre.")
         self.Serverconnection.send_buffer({'LUNA_LOG':[{'type':'ACTION','content':'--{}--@{} ({}): {}'.format(self.system_name.upper(),user,self.room_name,text), 'info':None, 'conv_id':original_command, 'show':True}]})
-        self.Audio_Output.play(audiofile)
-        self.Audio_Output.say("Es gab einen Fehler beim Abspielen einer Audiodatei.")
-        
+        self.Audio_Output.playback_audio_format = audiofile["format"]
+        self.Audio_Output.play(audiofile["buffer"])
+    
     def translate(self, text, targetLang='de'):
         try:
             request = Request(
@@ -578,7 +599,6 @@ class Modulewrapper:
         Luna.request_say(self.text, text, room, user, output)
         
     def play(self, audiofile, room=None, user=None):
-        print("play in Modulwrapper in room")
         self.Audio_Output.play(audiofile)
 
     def listen(self, user=None, input='auto'):
@@ -637,6 +657,13 @@ class Modulewrapper:
             # ich bin jetz einfach mal so frei und faul und gehe davon aus, dass eine Modul-Name von einem Modul übergeben wird, das es auch wirklich gibt
             else:
                 return module_storage[module_name]
+                
+    def start_hotword_detection(self):
+        self.Audio_Input.stopped = True
+        
+    def stopp_hotword_detection(self):
+        self.Audio_Input.stopped = False
+        
 
 class Modulewrapper_continuous:
     # Dieselbe Klasse für continuous_modules. Die Besonderheit: Die say- und listen-Funktionen
@@ -717,7 +744,7 @@ class Conversation:
 
 #################################################-MAIN-#################################################
 
-# aus LUNA_config.json laden
+# aus config.json laden
 with open('config.json', 'r') as config_file:
     config_data = json.load(config_file)
 
@@ -781,6 +808,7 @@ try:
                 # Wir haben noch keine wirkliche Konversation, aber wir blockieren sie schon mal
                 Luna.Conversation.blocked = True
                 print('\n\nUser --{}-- detected'.format(Local_storage['LUNA_Hotword_detected']['user'].upper()))
+                Luna.hotword_detected()
                 # Server knows best. Einfach den schon mal fragen, dann wissen wir gleich (wenn der Text vorliegt), wer da überhaupt spricht...
                 Luna.Serverconnection.send({'LUNA_user_voice_recognized':Local_storage['LUNA_Hotword_detected']['user']})
                 while True:
@@ -801,7 +829,7 @@ try:
         time.sleep(0.03)
 except ConnectionAbortedError:
     print('\n\n[ERROR] Verbindung zum Server unterbrochen!\n')
-    Modulewrapper.say(Modulewrapper, text="Ich habe die Verbindung zum Server verloren, daher schalte ich mich zunächst einmal ab.",room=room_name)
+    Modulewrapper.say(text="Ich habe die Verbindung zum Server verloren, daher schalte ich mich zunächst einmal ab.",room=room_name)
 finally:
     Modules.stop_continuous()
     Audioinput.stop()
