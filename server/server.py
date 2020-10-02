@@ -19,6 +19,7 @@ import pyjuna as juna
 import traceback
 import Websocket
 
+
 def runMain(commandMap=None, feedbackMap=None):
     class Modules:
         def __init__(self):
@@ -43,8 +44,10 @@ def runMain(commandMap=None, feedbackMap=None):
                 Log.write('INFO', '-- (Keine vorhanden)', show=True)
             Log.write('', '------ CONTINUOUS', show=True)
 
-            self.common_continuous_modules = self.get_modules('modules/continuous',continuous=True) + juna.loadModulesContinuous('modules')
-            self.common_continuous_modules.sort(key=lambda mod: mod.PRIORITY if hasattr(mod, 'PRIORITY') else 0, reverse=True)
+            self.common_continuous_modules = self.get_modules('modules/continuous',
+                                                              continuous=True) + juna.loadModulesContinuous('modules')
+            self.common_continuous_modules.sort(key=lambda mod: mod.PRIORITY if hasattr(mod, 'PRIORITY') else 0,
+                                                reverse=True)
 
             if self.common_continuous_modules == []:
                 Log.write('INFO', '-- (Keine vorhanden)', show=True)
@@ -91,7 +94,7 @@ def runMain(commandMap=None, feedbackMap=None):
                         if not word in self.modules_defined_vocabulary:
                             self.modules_defined_vocabulary.append(word)
             modules.sort(key=lambda mod: mod.PRIORITY if hasattr(mod, 'PRIORITY')
-                         else 0, reverse=True)
+            else 0, reverse=True)
             return modules
 
         def get_user_modules(self, continuous=False):
@@ -108,11 +111,14 @@ def runMain(commandMap=None, feedbackMap=None):
                         mod = loader.load_module(name)
                     except:
                         traceback.print_exc()
-                        Log.write('WARNING', 'Modul {} (Nutzer: {}) ist fehlerhaft und wurde übersprungen!'.format(name, username), show=True)
+                        Log.write('WARNING',
+                                  'Modul {} (Nutzer: {}) ist fehlerhaft und wurde übersprungen!'.format(name, username),
+                                  show=True)
                         continue
                     else:
                         if continuous == True:
-                            Log.write('INFO', 'Fortlaufendes Modul {} (Nutzer: {}) geladen'.format(name, username), show=True)
+                            Log.write('INFO', 'Fortlaufendes Modul {} (Nutzer: {}) geladen'.format(name, username),
+                                      show=True)
                             modules.append(mod)
                             self.no_user_continuous_modules = False
                         else:
@@ -124,16 +130,18 @@ def runMain(commandMap=None, feedbackMap=None):
                             if not word in self.modules_defined_vocabulary:
                                 self.modules_defined_vocabulary.append(word)
                 modules.sort(key=lambda mod: mod.PRIORITY if hasattr(mod, 'PRIORITY')
-                             else 0, reverse=True)
+                else 0, reverse=True)
                 usermodules[username] = modules
             return usermodules
 
-        def query_threaded(self, user, name, text, direct=False, origin_room=None, data=None, must_be_secure=False): #direct: True = Sprachaufruf
+        def query_threaded(self, user, name, text, direct=False, origin_room=None, data=None,
+                           must_be_secure=False):  # direct: True = Sprachaufruf
             if text == None or text == '':
-                text = random.randint(0,1000000000)
+                text = random.randint(0, 1000000000)
                 analysis = {}
             else:
-                Log.write('ACTION', '--{}-- ({}): {}'.format(user.upper(), origin_room, text), conv_id=str(text), show=True)
+                Log.write('ACTION', '--{}-- ({}): {}'.format(user.upper(), origin_room, text), conv_id=str(text),
+                          show=True)
                 try:
                     analysis = Luna.Analyzer.analyze(str(text))
                     Log.write('ACTION', 'Analyse: ' + str(analysis), conv_id=str(text), show=True)
@@ -145,10 +153,12 @@ def runMain(commandMap=None, feedbackMap=None):
             if name is not None:
                 # Modul wurde direkt aufgerufen
                 for module in self.common_modules:
-                     if module.__name__ == name and ((not must_be_secure) or (hasattr(module, 'SECURE') and getattr(module, 'SECURE'))):
-                        Log.write('ACTION', '--Modul {} direkt aufgerufen (Parameter: {})--'.format(name, text), conv_id=str(text), show=True)
+                    if module.__name__ == name and (
+                            (not must_be_secure) or (hasattr(module, 'SECURE') and getattr(module, 'SECURE'))):
+                        Log.write('ACTION', '--Modul {} direkt aufgerufen (Parameter: {})--'.format(name, text),
+                                  conv_id=str(text), show=True)
                         Luna.active_modules[str(text)] = self.Modulewrapper(text, analysis, user, origin_room, data)
-                        mt = Thread(target=self.run_threaded_module, args=(text,module,))
+                        mt = Thread(target=self.run_threaded_module, args=(text, module,))
                         mt.daemon = True
                         mt.start()
                         if direct:
@@ -156,10 +166,14 @@ def runMain(commandMap=None, feedbackMap=None):
 
                         return True
                 for module in self.user_modules[user]:
-                    if module.__name__ == name and ((not must_be_secure) or (hasattr(module, 'SECURE') and getattr(module, 'SECURE'))):
-                        Log.write('ACTION', '--Modul {} (Nutzer: {}) direkt aufgerufen (Parameter: {})--'.format(name, user, text), conv_id=str(text), show=True)
+                    if module.__name__ == name and (
+                            (not must_be_secure) or (hasattr(module, 'SECURE') and getattr(module, 'SECURE'))):
+                        Log.write('ACTION',
+                                  '--Modul {} (Nutzer: {}) direkt aufgerufen (Parameter: {})--'.format(name, user,
+                                                                                                       text),
+                                  conv_id=str(text), show=True)
                         Luna.active_modules[str(text)] = self.Modulewrapper(text, analysis, user, origin_room, data)
-                        mt = Thread(target=self.run_threaded_module, args=(text,module,))
+                        mt = Thread(target=self.run_threaded_module, args=(text, module,))
                         mt.daemon = True
                         mt.start()
                         if direct:
@@ -171,10 +185,12 @@ def runMain(commandMap=None, feedbackMap=None):
             if origin_room == 'Telegram':
                 for module in self.common_modules:
                     try:
-                        if module.telegram_isValid(data) and ((not must_be_secure) or (hasattr(module, 'SECURE') and getattr(module, 'SECURE'))):
-                            Log.write('ACTION', '--Modul {} via telegram_isValid gestartet--'.format(module.__name__), conv_id=str(text), show=True)
+                        if module.telegram_isValid(data) and (
+                                (not must_be_secure) or (hasattr(module, 'SECURE') and getattr(module, 'SECURE'))):
+                            Log.write('ACTION', '--Modul {} via telegram_isValid gestartet--'.format(module.__name__),
+                                      conv_id=str(text), show=True)
                             Luna.active_modules[str(text)] = self.Modulewrapper(text, analysis, user, origin_room, data)
-                            mt = Thread(target=self.run_threaded_module, args=(text,module,))
+                            mt = Thread(target=self.run_threaded_module, args=(text, module,))
                             mt.daemon = True
                             mt.start()
                             if direct:
@@ -185,10 +201,12 @@ def runMain(commandMap=None, feedbackMap=None):
             # Ansonsten halt ohne spezielle Telegram-Features
             for module in self.common_modules:
                 try:
-                    if module.isValid(text) and ((not must_be_secure) or (hasattr(module, 'SECURE') and getattr(module, 'SECURE'))):
-                        Log.write('ACTION', '--Modul {} gestartet--'.format(module.__name__), conv_id=str(text), show=True)
+                    if module.isValid(text) and (
+                            (not must_be_secure) or (hasattr(module, 'SECURE') and getattr(module, 'SECURE'))):
+                        Log.write('ACTION', '--Modul {} gestartet--'.format(module.__name__), conv_id=str(text),
+                                  show=True)
                         Luna.active_modules[str(text)] = self.Modulewrapper(text, analysis, user, origin_room, data)
-                        mt = Thread(target=self.run_threaded_module, args=(text,module,))
+                        mt = Thread(target=self.run_threaded_module, args=(text, module,))
                         mt.daemon = True
                         mt.start()
                         if direct:
@@ -196,7 +214,8 @@ def runMain(commandMap=None, feedbackMap=None):
                         return True
                 except:
                     traceback.print_exc()
-                    Log.write('ERROR', 'Modul {} konnte nicht abgefragt werden!'.format(module.__name__), conv_id=str(text), show=True)
+                    Log.write('ERROR', 'Modul {} konnte nicht abgefragt werden!'.format(module.__name__),
+                              conv_id=str(text), show=True)
 
             if user is not None and user in Users.userlist:
                 # ... Und wenn wir nen Nutzer haben, können wir auch noch in seinen Modulen suchen
@@ -206,9 +225,12 @@ def runMain(commandMap=None, feedbackMap=None):
                         for module in self.user_modules[user]:
                             try:
                                 if module.telegram_isValid(data):
-                                    Log.write('ACTION', '--Modul {} (Nutzer: {}) via telegram_isValid gestartet--'.format(module.__name__, user), conv_id=str(text), show=True)
-                                    Luna.active_modules[str(text)] = self.Modulewrapper(text, analysis, user, origin_room, data)
-                                    mt = Thread(target=self.run_threaded_module, args=(text,module,))
+                                    Log.write('ACTION',
+                                              '--Modul {} (Nutzer: {}) via telegram_isValid gestartet--'.format(
+                                                  module.__name__, user), conv_id=str(text), show=True)
+                                    Luna.active_modules[str(text)] = self.Modulewrapper(text, analysis, user,
+                                                                                        origin_room, data)
+                                    mt = Thread(target=self.run_threaded_module, args=(text, module,))
                                     mt.daemon = True
                                     mt.start()
                                     if direct:
@@ -219,9 +241,11 @@ def runMain(commandMap=None, feedbackMap=None):
                     for module in self.user_modules[user]:
                         try:
                             if module.isValid(text):
-                                Log.write('ACTION', '--Modul {} (Nutzer: {}) gestartet--'.format(module.__name__, user), conv_id=str(text), show=True)
-                                Luna.active_modules[str(text)] = self.Modulewrapper(text, analysis, user, origin_room, data)
-                                mt = Thread(target=self.run_threaded_module, args=(text,module,))
+                                Log.write('ACTION', '--Modul {} (Nutzer: {}) gestartet--'.format(module.__name__, user),
+                                          conv_id=str(text), show=True)
+                                Luna.active_modules[str(text)] = self.Modulewrapper(text, analysis, user, origin_room,
+                                                                                    data)
+                                mt = Thread(target=self.run_threaded_module, args=(text, module,))
                                 mt.daemon = True
                                 mt.start()
                                 if direct:
@@ -229,7 +253,10 @@ def runMain(commandMap=None, feedbackMap=None):
                                 return True
                         except:
                             traceback.print_exc()
-                            Log.write('ERROR', 'Modul {} (Nutzer: {}) konnte nicht abgefragt werden!'.format(module.__name__, user), conv_id=str(text), show=True)
+                            Log.write('ERROR',
+                                      'Modul {} (Nutzer: {}) konnte nicht abgefragt werden!'.format(module.__name__,
+                                                                                                    user),
+                                      conv_id=str(text), show=True)
 
             # Hier ist die Lösung, die dafür sorgt, dass die Anfrage ggf. an einen bestimmten
             # Raum weitergeleitet wird... Das macht Sinn: So bleiben Direktaufrufe
@@ -237,7 +264,8 @@ def runMain(commandMap=None, feedbackMap=None):
             # korrekt interpretiert werden!+
             if not analysis == {}:
                 if analysis['room'] is not None:
-                    return Luna.route_query_modules(user, name, text, analysis['room'], direct=direct, origin_room=origin_room, data=data)
+                    return Luna.route_query_modules(user, name, text, analysis['room'], direct=direct,
+                                                    origin_room=origin_room, data=data)
 
             return False
 
@@ -247,8 +275,10 @@ def runMain(commandMap=None, feedbackMap=None):
                 Log.write('ACTION', '--Modul {} beendet--'.format(module.__name__), conv_id=str(text), show=True)
             except:
                 traceback.print_exc()
-                Log.write('ERROR', 'Runtime-Error in Modul {}. Das Modul wurde beendet.\n'.format(module.__name__), show=True)
-                Luna.active_modules[str(text)].say('Entschuldige, es gab ein Problem mit dem Modul {}.'.format(module.__name__))
+                Log.write('ERROR', 'Runtime-Error in Modul {}. Das Modul wurde beendet.\n'.format(module.__name__),
+                          show=True)
+                Luna.active_modules[str(text)].say(
+                    'Entschuldige, es gab ein Problem mit dem Modul {}.'.format(module.__name__))
             finally:
                 try:
                     del Luna.active_modules[str(text)]
@@ -264,7 +294,7 @@ def runMain(commandMap=None, feedbackMap=None):
             no_modules = True
             if not self.common_continuous_modules == []:
                 no_modules = False
-                cct = Thread(target=self.run_continuous, args=(self.common_continuous_modules,None))
+                cct = Thread(target=self.run_continuous, args=(self.common_continuous_modules, None))
                 cct.daemon = True
                 cct.start()
                 self.continuous_threads_running += 1
@@ -272,7 +302,7 @@ def runMain(commandMap=None, feedbackMap=None):
             for user, modules in self.user_continuous_modules.items():
                 if not modules == []:
                     no_modules = False
-                    uct = Thread(target=self.run_continuous, args=(modules,user))
+                    uct = Thread(target=self.run_continuous, args=(modules, user))
                     uct.daemon = True
                     uct.start()
                     self.continuous_threads_running += 1
@@ -280,7 +310,7 @@ def runMain(commandMap=None, feedbackMap=None):
                 Log.write('INFO', '-- (Keine vorhanden)', show=True)
             return
 
-        def run_continuous(self,modules,user):
+        def run_continuous(self, modules, user):
             # Führt die continuous_modules aus. Continuous_modules laufen immer im Hintergrund,
             # um auf andere Ereignisse als Sprachbefehle zu warten (z.B. Sensorwerte, Daten etc.).
             if user == None:
@@ -292,24 +322,27 @@ def runMain(commandMap=None, feedbackMap=None):
             Luna.continuous_modules[user] = {}
             for module in modules:
                 intervalltime = module.INTERVALL if hasattr(module, 'INTERVALL') else 0
-                Luna.continuous_modules[user][module.__name__] = self.Modulewrapper_continuous(intervalltime,user)
+                Luna.continuous_modules[user][module.__name__] = self.Modulewrapper_continuous(intervalltime, user)
                 try:
                     module.start(Luna.continuous_modules[user][module.__name__], Luna.local_storage)
                     Log.write('INFO', 'Modul {} (Nutzer: {}) gestartet'.format(module.__name__, user), show=True)
                 except:
-                    #traceback.print_exc()
+                    # traceback.print_exc()
                     continue
             while True:
                 for module in modules:
                     # Continuous_modules können ein Zeitintervall definieren, in dem sie gerne
                     # aufgerufen werden wollen, um Ressourcen zu sparen.
-                    if time.time() - Luna.continuous_modules[user][module.__name__].last_call >= Luna.continuous_modules[user][module.__name__].intervall_time:
+                    if time.time() - Luna.continuous_modules[user][module.__name__].last_call >= \
+                            Luna.continuous_modules[user][module.__name__].intervall_time:
                         Luna.continuous_modules[user][module.__name__].last_call = time.time()
                         try:
                             module.run(Luna.continuous_modules[user][module.__name__], Luna.local_storage)
                         except:
                             traceback.print_exc()
-                            Log.write('ERROR', 'Runtime-Error in Continuous-Module {} (Nutzer "{}"). Das Modul wird nicht mehr ausgeführt.\n'.format(module.__name__, user), show=True)
+                            Log.write('ERROR',
+                                      'Runtime-Error in Continuous-Module {} (Nutzer "{}"). Das Modul wird nicht mehr ausgeführt.\n'.format(
+                                          module.__name__, user), show=True)
                             del Luna.continuous_modules[user][module.__name__]
                             modules.remove(module)
                 if self.continuous_stopped:
@@ -352,7 +385,6 @@ def runMain(commandMap=None, feedbackMap=None):
                     Log.write('INFO', '-- (Keine zu beenden)', show=True)
             return
 
-
     class Modulewrapper:
         # Diese Klasse ist wichtig: Module bekommen sie anstelle einer "echten" Luna-Instanz
         # vorgesetzt. Denn es gibt nur eine Luna-Instanz, um von dort aus alles regeln zu
@@ -361,7 +393,7 @@ def runMain(commandMap=None, feedbackMap=None):
         # ergänzt diese Klasse und schleift ansonsten einfach alle von Modulen aus aufrufbaren
         # Funktionen an die Hauptinstanz von Luna durch.
         def __init__(self, text, analysis, user, origin_room, data):
-            self.text = text # original_command
+            self.text = text  # original_command
             self.analysis = analysis
             self.user = user
             self.room = origin_room
@@ -383,11 +415,13 @@ def runMain(commandMap=None, feedbackMap=None):
             self.path = Luna.path
 
         def say(self, text, room=None, user=None, output='auto'):
+            text.replace('  ', ' ')
+            text = self.correct_output_automate(text)
             if text == '' or not type(text) == type('test'):
                 return
             if user == None or user == 'Unknown':
                 user = self.user
-            if user == None or user == 'Unknown': # Immer noch? Kann durchaus sein...
+            if user == None or user == 'Unknown':  # Immer noch? Kann durchaus sein...
                 room = self.room
             try:
                 if self.local_storage['users'][user]['room'] == 'Telegram' and not 'telegram' in output.lower():
@@ -401,62 +435,45 @@ def runMain(commandMap=None, feedbackMap=None):
                 if not 'telegram' in output.lower():
                     output = 'telegram'
             Luna.route_say(self.text, text, room, user, output)
-        
-        def play(self, path=None, audiofile=None, room=None, user=None, output='auto'):
-            print("play in Modulewrapper in room")
-            # gucken, ob ein Pfad angegeben wurde
-            if path is not None:
-                # Ja? Dann die Datei zum Pfad laden
-                audiofile = wave.open(path, 'rb')
-            if user == None or user == 'Unknown':
-                print("user = self.user")
-                user = self.user
-            if user == None or user == 'Unknown': # Immer noch? Kann durchaus sein...
-                print("room = self.room")
-                room = self.room
-            print("try aufgerufen")
-            try:
-                if self.local_storage['users'][user]['room'] == 'Telegram' and not 'telegram' in output.lower():
-                    print("if aufgerufen")
-                    output = 'telegram'
-            except KeyError:
-                print("KeyError")
-            print("nach except")
-            if output == 'auto':
-                print("if output")
-                output = 'telegram' if self.room == 'Telegram' else 'speech'
-            # Noch ne Variante: Der Nutzer ist nur über Telegram bekannt...
-            if user not in self.userlist and user in self.local_storage['LUNA_telegram_name_to_id_table'].keys():
-                if not 'telegram' in output.lower():
-                    output = 'telegram'
-            audiofile = "Das ist ein test, ob eine Audiodatei ankommen würde."
-            Luna.route_play(self.text, audiofile, room, user, output)
-        
-        def plllay(self, path=None, audiofile=None, room=None, user=None, output='auto'):
+
+        def play(self, path=None, audiofile=None, room=None, user=None, priority=None, output='auto'):
             # gucken, ob ein Pfad angegeben wurde
             if path is not None:
                 # Ja? Dann die Datei zum Pfad laden
                 audiofile = wave.open(path, 'rb')
             if user == None or user == 'Unknown':
                 user = self.user
-            if user == None or user == 'Unknown': # Immer noch? Kann durchaus sein...
+            if user == None or user == 'Unknown':  # Immer noch? Kann durchaus sein...
                 room = self.room
             try:
                 if self.local_storage['users'][user]['room'] == 'Telegram' and not 'telegram' in output.lower():
                     output = 'telegram'
             except KeyError:
                 print("KeyError")
-            """
             if output == 'auto':
                 output = 'telegram' if self.room == 'Telegram' else 'speech'
             # Noch ne Variante: Der Nutzer ist nur über Telegram bekannt...
             if user not in self.userlist and user in self.local_storage['LUNA_telegram_name_to_id_table'].keys():
                 if not 'telegram' in output.lower():
                     output = 'telegram'
-            """
-            audiofile = "Das ist ein test, um zu gucken, ob es klappt"
-            Luna.route_plllay(self.text, audiofile, room, user, output)
-        
+
+            chunk = 4096
+            frame_rate = audiofile.getframerate() * 2
+
+            format = {'format': 8,
+                      'channels': 1,
+                      'rate': frame_rate,
+                      'chunk': chunk}
+
+            wav_data = audiofile.readframes(chunk)
+            audio_buffer = []
+            while wav_data:
+                audio_buffer.append(wav_data)
+                wav_data = audiofile.readframes(chunk)
+            audio_buffer.append('Endederdurchsage')
+            audio_data = {"buffer": audio_buffer, "format": format}
+            Luna.route_play(self.text, audio_data, room, user, output, priority)
+
         def listen(self, user=None, input='auto'):
             if user == None or user == 'Unknown':
                 user = self.user
@@ -472,7 +489,7 @@ def runMain(commandMap=None, feedbackMap=None):
                 return
             if user == None or user == 'Unknown':
                 user = self.user
-            if user == None or user == 'Unknown': # Immer noch? Kann durchaus sein...
+            if user == None or user == 'Unknown':  # Immer noch? Kann durchaus sein...
                 room = self.room
             try:
                 if self.local_storage['users'][user]['room'] == 'Telegram' and not 'telegram' in output.lower():
@@ -494,7 +511,7 @@ def runMain(commandMap=None, feedbackMap=None):
                 user = self.user
             response = Luna.route_listen(self.text, user, telegram=True)
             return response
-        
+
         def end_Conversation(self):
             Luna.end_Conversation(self.text)
 
@@ -510,12 +527,12 @@ def runMain(commandMap=None, feedbackMap=None):
 
         def translate(self, ttext, targetLang='de'):
             return Luna.translate(ttext, targetLang)
-            
+
         def change_hotworddetection(self, room=False, changing_to='on'):
             if room is False:
                 room = self.room
             Luna.route_change_hotworddetection(room, changing_to)
-            
+
         def batchGen(batch):
             """
             With the batchGen-function you can generate fuzzed compare-strings
@@ -562,14 +579,14 @@ def runMain(commandMap=None, feedbackMap=None):
             else:
                 parse = input
             while "[" in parse and "]" in parse:
-                sp0 = parse.split("[",1)
+                sp0 = parse.split("[", 1)
                 front = sp0[0]
-                sp1 = sp0[1].split("]",1)
-                middle = sp1[0].split("|",1)
+                sp1 = sp0[1].split("]", 1)
+                middle = sp1[0].split("|", 1)
                 end = sp1[1]
                 parse = front + random.choice(middle) + end
             return parse
-            
+
         def module_storage(self, module_name=None):
             module_storage = Luna.local_storage.get("module_storage")
             if module_name is None:
@@ -577,12 +594,24 @@ def runMain(commandMap=None, feedbackMap=None):
             # ich bin jetz einfach mal so frei und faul und gehe davon aus, dass eine Modul-Name von einem Modul übergeben wird, das es auch wirklich gibt
             else:
                 return module_storage[module_name]
-                
+
         def sendWebSocketEvent(self, event: str, data: dict):
             Websocket.sendEvent(event, data)
-            
-        
-    
+
+        def correct_output(self, luna_array, telegram_array):
+            if self.telegram_call is True:
+                return telegram_array
+            else:
+                return luna_array
+
+        def correct_output_automate(self, text):
+            if self.telegram_call:
+                text.replace(' Uhr ', ':')
+            else:
+                text.replace('Tiffany', 'Tiffanie')
+                text.replace('Timer', 'Teimer')
+            return text
+
     class Modulewrapper_continuous:
         # Dieselbe Klasse für continuous_modules. Die Besonderheit: Die say- und listen-Funktionen
         # fehlen (also genau das, wofür der Modulewrapper eigentlich da war xD), weil continuous_-
@@ -620,10 +649,9 @@ def runMain(commandMap=None, feedbackMap=None):
             if user == None or user == 'Unknown':
                 user = self.user
             return Luna.start_module(user, name, text, room)
-        
+
         def sendWebSocketEvent(self, event: str, data: dict):
             Websocket.sendEvent(event, data)
-            
 
     class Users:
         def __init__(self):
@@ -685,7 +713,7 @@ def runMain(commandMap=None, feedbackMap=None):
             self.rooms = Rooms
             self.other_devices = Other_devices
             self.devices_connecting = Devices_connecting
-            self.telegram_queued_users = [] # Bei diesen Nutzern wird auf eine Antwort gewartet
+            self.telegram_queued_users = []  # Bei diesen Nutzern wird auf eine Antwort gewartet
             self.telegram_queue_output = {}
 
             self.local_storage = Local_storage
@@ -701,7 +729,7 @@ def runMain(commandMap=None, feedbackMap=None):
             # Verarbeitet eingehende Telegram-Nachrichten, weist ihnen Nutzer zu etc.
             while True:
                 for msg in self.telegram.messages.copy():
-                    #print(msg)
+                    # print(msg)
 
                     # Den LUNA-Nutzernamen aus der entsprechenden Tabelle laden
                     try:
@@ -717,9 +745,12 @@ def runMain(commandMap=None, feedbackMap=None):
                             if user == '':
                                 # Gibt's auch nicht? Pech gehabt!
                                 Log.write('WARNING', 'Telegram-Nutzer-ID {} kann nicht auf {} zugreifen. \n'
-                                          'Unregistrierte Nutzer müssen einen Telegram-Benutzernamen eingerichtet haben!'.format(msg['from']['id'], self.system_name),
+                                                     'Unregistrierte Nutzer müssen einen Telegram-Benutzernamen eingerichtet haben!'.format(
+                                    msg['from']['id'], self.system_name),
                                           conv_id=msg['text'], show=True)
-                                self.telegram.say('Entschuldige bitte, ich kann leider nicht mit dir reden, weil du keinen Telegram-Benutzernamen eingerichtet hast.', msg['from']['id'], msg['text'])
+                                self.telegram.say(
+                                    'Entschuldige bitte, ich kann leider nicht mit dir reden, weil du keinen Telegram-Benutzernamen eingerichtet hast.',
+                                    msg['from']['id'], msg['text'])
                                 self.telegram.messages.remove(msg)
                                 continue
                             else:
@@ -729,10 +760,17 @@ def runMain(commandMap=None, feedbackMap=None):
                             # Wenn kein Zugriff erlaubt ist, legen wir die Nachricht trotzdem auf die Halde, vielleicht hat irgendein Modul Verwendung dafür...
                             self.local_storage['rejected_telegram_messages'].append(msg)
                             try:
-                                Log.write('WARNING', 'Nachricht von unbekanntem Telegram-Nutzer {} ({}). Zugriff verweigert.'.format(msg['from']['username'], msg['from']['id']), conv_id=msg['text'], show=True)
+                                Log.write('WARNING',
+                                          'Nachricht von unbekanntem Telegram-Nutzer {} ({}). Zugriff verweigert.'.format(
+                                              msg['from']['username'], msg['from']['id']), conv_id=msg['text'],
+                                          show=True)
                             except KeyError:
-                                Log.write('WARNING', 'Nachricht von unbekanntem Telegram-Nutzer ({}). Zugriff verweigert.'.format(msg['from']['id']), conv_id=msg['text'], show=True)
-                            self.telegram.say('Entschuldigung, aber ich darf leider zur Zeit nicht mit Fremden reden. Hat Papa gesagt :(', msg['from']['id'], msg['text'])
+                                Log.write('WARNING',
+                                          'Nachricht von unbekanntem Telegram-Nutzer ({}). Zugriff verweigert.'.format(
+                                              msg['from']['id']), conv_id=msg['text'], show=True)
+                            self.telegram.say(
+                                'Entschuldigung, aber ich darf leider zur Zeit nicht mit Fremden reden. Hat Papa gesagt :(',
+                                msg['from']['id'], msg['text'])
                             self.telegram.messages.remove(msg)
                             continue
 
@@ -746,15 +784,18 @@ def runMain(commandMap=None, feedbackMap=None):
                         pass
                     # Nachricht ist definitiv eine (ggf. eingeschobene) "neue Anfrage" ("Hey LUNA,...")
                     if msg['text'].lower().startswith(self.local_storage['activation_phrase'].lower()):
-                        response = self.route_query_modules(user, text=msg['text'], direct=True, origin_room='Telegram', data=msg)
+                        response = self.route_query_modules(user, text=msg['text'], direct=True, origin_room='Telegram',
+                                                            data=msg)
                     # Nachricht ist gar keine Anfrage, sondern eine Antwort (bzw. ein Modul erwartet eine solche)
                     elif user in self.telegram_queued_users:
                         self.telegram_queue_output[user] = msg
                     # Nachricht ist eine normale Anfrage
                     else:
-                        response = self.route_query_modules(user, text=msg['text'], direct=True, origin_room='Telegram', data=msg)
+                        response = self.route_query_modules(user, text=msg['text'], direct=True, origin_room='Telegram',
+                                                            data=msg)
                     if response == False:
-                        self.telegram.say('Das habe ich leider nicht verstanden.', self.local_storage['LUNA_telegram_name_to_id_table'][user], msg['text'])
+                        self.telegram.say('Das habe ich leider nicht verstanden.',
+                                          self.local_storage['LUNA_telegram_name_to_id_table'][user], msg['text'])
                     self.telegram.messages.remove(msg)
                 time.sleep(0.5)
 
@@ -765,30 +806,41 @@ def runMain(commandMap=None, feedbackMap=None):
             text = self.speechVariation(text)
             if self.presentation_mode and user in self.Users.userlist:
                 output = 'speech'
-            Log.write('DEBUG', {'Action':'route_say()', 'conv_id':original_command, 'text':text, 'raum':raum, 'user':user, 'output':output}, conv_id=original_command, show=False)
+            Log.write('DEBUG',
+                      {'Action': 'route_say()', 'conv_id': original_command, 'text': text, 'raum': raum, 'user': user,
+                       'output': output}, conv_id=original_command, show=False)
             if ('telegram' in output.lower()) or (user not in self.Users.userlist and user is not None):
                 if self.telegram is not None:
                     # Spezialfall berücksichtigen: Es kann beim besten Willen nicht ermittelt werden, an wen der Text gesendet werden soll. Einfach beenden.
                     if user == None or user == 'Unknown':
-                        Log.write('WARNING', 'Der Text "{}" konnte nicht gesendet werden, da kein Nutzer als Ziel angegeben wurde'.format(text), conv_id=original_command, show=True)
+                        Log.write('WARNING',
+                                  'Der Text "{}" konnte nicht gesendet werden, da kein Nutzer als Ziel angegeben wurde'.format(
+                                      text), conv_id=original_command, show=True)
                         return
                     try:
-                        self.telegram.say(text, self.local_storage['LUNA_telegram_name_to_id_table'][user], original_command, output=output)
+                        self.telegram.say(text, self.local_storage['LUNA_telegram_name_to_id_table'][user],
+                                          original_command, output=output)
                     except KeyError:
-                        Log.write('WARNING', 'Der Text "{}" konnte nicht gesendet werden, da für den Nutzer "{}" keine Telegram-ID angegeben wurde'.format(text, user), conv_id=original_command, show=True)
+                        Log.write('WARNING',
+                                  'Der Text "{}" konnte nicht gesendet werden, da für den Nutzer "{}" keine Telegram-ID angegeben wurde'.format(
+                                      text, user), conv_id=original_command, show=True)
                     return
                 else:
-                    Log.write('ERROR', 'Der Text "{}" sollte via Telegram gesendet werden, obwohl Telegram nicht eingerichtet ist!'.format(text), conv_id=original_command, show=True)
+                    Log.write('ERROR',
+                              'Der Text "{}" sollte via Telegram gesendet werden, obwohl Telegram nicht eingerichtet ist!'.format(
+                                  text), conv_id=original_command, show=True)
                     return
-             # Vielleicht ist es ein WebSocket output type?
+            # Vielleicht ist es ein WebSocket output type?
             if (Websocket.tellUserVia(user, output, text)):
                 return
             if raum == None:
                 # Spezialfall berücksichtigen: Es kann beim besten Willen nicht ermittelt werden, wo der Text gesagt werden soll. Einfach beenden.
                 if user == None or user == 'Unknown':
-                    Log.write('WARNING', 'Der Text "{}" konnte nicht gesagt werden, weil weder ein Raum noch ein Nutzer als Ziel angegeben wurden'.format(text), conv_id=original_command, show=True)
+                    Log.write('WARNING',
+                              'Der Text "{}" konnte nicht gesagt werden, weil weder ein Raum noch ein Nutzer als Ziel angegeben wurden'.format(
+                                  text), conv_id=original_command, show=True)
                     return
-                #Vielleicht ist der user einem WebSocket-Raum zugeordnet?
+                # Vielleicht ist der user einem WebSocket-Raum zugeordnet?
                 if Websocket.tellUser(user, text, self.local_storage):
                     return
                 # Der Text soll zu einem bestimmten user gesagt werden
@@ -797,13 +849,15 @@ def runMain(commandMap=None, feedbackMap=None):
                     for name, room in self.rooms.items():
                         if user in room.users:
                             if current_waiting_room[0] == '':
-                                current_waiting_room = (name,room)
-                                room.request_say(original_command,text,raum,user,send=True)
+                                current_waiting_room = (name, room)
+                                room.request_say(original_command, text, raum, user, send=True)
                             if not name == current_waiting_room[0]:
                                 # Der Benutzer hat gerade den Raum gewechselt, das Gespräch muss folgen!
-                                current_waiting_room[1].request_say(original_command,text,raum,user,cancel=True,send=True)
+                                current_waiting_room[1].request_say(original_command, text, raum, user, cancel=True,
+                                                                    send=True)
                                 while True:
-                                    cancel_response = current_waiting_room[1].request_say(original_command, text, raum, user, cancel=True)
+                                    cancel_response = current_waiting_room[1].request_say(original_command, text, raum,
+                                                                                          user, cancel=True)
                                     if not cancel_response == 'ongoing':
                                         break
                                     time.sleep(0.03)
@@ -814,8 +868,8 @@ def runMain(commandMap=None, feedbackMap=None):
                                     return
                                 # Alles okay, wir fragen bei einem anderen Raum nach
                                 current_waiting_room[1].request_end_Conversation(original_command)
-                                current_waiting_room = (name,room)
-                                room.request_say(original_command,text,raum,user,send=True)
+                                current_waiting_room = (name, room)
+                                room.request_say(original_command, text, raum, user, send=True)
                             if room.request_say(original_command, text, raum, user) == True:
                                 return
                     time.sleep(0.03)
@@ -833,97 +887,97 @@ def runMain(commandMap=None, feedbackMap=None):
                         while room.request_say(original_command, text, raum, user) == False:
                             time.sleep(0.03)
                         return
-        
-        def route_play(self, original_command, audiofile, raum, user, output):
-            print("route_play in LUNA in room")
+
+        def route_play(self, original_command, audiofile, raum, user, output, priority):
             if self.presentation_mode and user in self.Users.userlist:
                 output = 'speech'
-            Log.write('DEBUG', {'Action':'route_play()', 'conv_id':original_command, 'raum':raum, 'user':user, 'output':output}, conv_id=original_command, show=False)
+            Log.write('DEBUG', {'Action': 'route_play()', 'conv_id': original_command, 'raum': raum, 'user': user,
+                                'output': output, 'priority': priority}, conv_id=original_command, show=False)
             if ('telegram' in output.lower()) or (user not in self.Users.userlist and user is not None):
                 if self.telegram is not None:
-                    # Spezialfall berücksichtigen: Es kann beim besten Willen nicht ermittelt werden, an wen der Text gesendet werden soll. Einfach beenden.
+                    # Spezialfall berücksichtigen: Es kann beim besten Willen nicht ermittelt werden, an wen die Audio gesendet werden soll. Einfach beenden.
                     if user == None or user == 'Unknown':
-                        Log.write('WARNING', 'Eine Audiodatei konnte nicht abgespielt werden, da kein Nutzer als Ziel angegeben wurde', conv_id=original_command, show=True)
+                        Log.write('WARNING',
+                                  'Eine Audiodatei konnte nicht abgespielt werden, da kein Nutzer als Ziel angegeben wurde',
+                                  conv_id=original_command, show=True)
                         return
                     try:
                         uid = self.local_storage['LUNA_telegram_name_to_id_table'][user]
-                        self.telegram.bot.sendAudio(uid, audiofile)
+                        self.telegram.sendAudio(audiofile, self.local_storage['LUNA_telegram_name_to_id_table'][user],
+                                                original_command)
                     except KeyError:
-                        Log.write('WARNING', 'Eine Audiodatei konnte nicht abgespielt werden, da kein Nutzer als Ziel angegeben wurde', conv_id=original_command, show=True)
+                        Log.write('WARNING',
+                                  'Eine Audiodatei konnte nicht abgespielt werden, da kein Nutzer als Ziel angegeben wurde',
+                                  conv_id=original_command, show=True)
                     return
                 else:
-                    Log.write('ERROR', 'Eine Audiodatei sollte via Telegram gesendet werden, obwohl Telegram nicht eingerichtet ist!'.format(text), conv_id=original_command, show=True)
+                    Log.write('ERROR',
+                              'Eine Audiodatei sollte via Telegram gesendet werden, obwohl Telegram nicht eingerichtet ist!'.format(
+                                  audiofile), conv_id=original_command, show=True)
                     return
             if raum == None:
-                # Spezialfall berücksichtigen: Es kann beim besten Willen nicht ermittelt werden, wo der Text gesagt werden soll. Einfach beenden.
+                # Spezialfall berücksichtigen: Es kann beim besten Willen nicht ermittelt werden, wo die Audio abgespielt werden soll. Einfach beenden.
                 if user == None or user == 'Unknown':
-                    Log.write('WARNING', 'Eine Audiodatei konnte nicht abgespielt werden, da kein Nutzer als Ziel angegeben wurde', conv_id=original_command, show=True)
+                    Log.write('WARNING',
+                              'Eine Audiodatei konnte nicht abgespielt werden, da kein Nutzer als Ziel angegeben wurde',
+                              conv_id=original_command, show=True)
                     return
-                # Der Text soll zu einem bestimmten user gesagt werden
-                current_waiting_room = ('',None)
+                # Die Audio soll bei einem bestimmten user abgespielt werden
+                current_waiting_room = ('', None)
                 while True:
                     for name, room in self.rooms.items():
                         if user in room.users:
                             if current_waiting_room[0] == '':
-                                current_waiting_room = (name,room)
-                                room.request_play(original_command,text,raum,user,send=True)
+                                current_waiting_room = (name, room)
+                                room.request_play(original_command, audiofile, raum, user, priority, send=True)
                             if not name == current_waiting_room[0]:
                                 # Der Benutzer hat gerade den Raum gewechselt, die Audio muss folgen!
-                                current_waiting_room[1].request_play(original_command,text,raum,user,cancel=True,send=True)
+                                current_waiting_room[1].request_play(original_command, audiofile, raum, user, priority,
+                                                                     cancel=True,
+                                                                     send=True)
                                 while True:
-                                    cancel_response = current_waiting_room[1].request_play(original_command, text, raum, user, cancel=True)
+                                    cancel_response = current_waiting_room[1].request_play(original_command, audiofile,
+                                                                                           raum,
+                                                                                           user, priority, cancel=True)
                                     if not cancel_response == 'ongoing':
                                         break
                                     time.sleep(0.03)
                                 if cancel_response == False:
-                                    # Konnte nicht abgebrochen werden, wurde bereits gesagt
-                                    # Und Ja, das heißt wirklich "wurde bereits gesagt" und nicht "wird gerade gesagt",
+                                    # Konnte nicht abgebrochen werden, wurde bereits abgespielt
+                                    # Und Ja, das heißt wirklich "wurde bereits abgespielt" und nicht "wird gerade abgespielt",
                                     # weil in dem Fall im Raum die Requests gar nicht erst bearbeitet werden können...
                                     return
                                 # Alles okay, wir fragen bei einem anderen Raum nach
                                 current_waiting_room[1].request_end_Conversation(original_command)
-                                current_waiting_room = (name,room)
-                                room.request_play(original_command,text,raum,user,send=True)
-                            if room.request_play(original_command, text, raum, user) == True:
+                                current_waiting_room = (name, room)
+                                room.request_play(original_command, audiofile, raum, user, priority, send=True)
+                            if room.request_play(original_command, audiofile, raum, user, priority) == True:
                                 return
                     time.sleep(0.03)
             else:
-                # Der Text soll in einem bestimmten Raum gesagt werden
+                # Die Audio soll in einem bestimmten Raum abgespielt werden
                 for name, room in self.rooms.items():
                     if name.lower() == raum.lower():
-                        # Dem Raum den Auftrag erteilen, es zu sagen
+                        # Dem Raum den Auftrag erteilen, es abzuspielen
                         room.Clientconnection.send({'LUNA_audio_play': audiofile})
                         room.request_play(original_command, audiofile, raum, user, send=True)
-                        # Warten, bis der Raum bestätigt, es gesagt zu haben
+                        # Warten, bis der Raum bestätigt, es abgespielt zu haben
                         while room.request_play(original_command, audiofile, raum, user) == False:
                             time.sleep(0.03)
                         return
-                   
-        def route_plllay(self, original_command, audiofile, raum, user, output):
-            Log.write('DEBUG', {'Action':'route_play()', 'conv_id':original_command, 'raum':raum, 'user':user, 'output':output}, conv_id=original_command, show=False)
-            raum = "Schlafzimmer"
-            # Der Text soll in einem bestimmten Raum gesagt werden
-            for name, room in self.rooms.items():
-                if name.lower() == raum.lower():
-                    # Dem Raum den Auftrag erteilen, es zu sagen
-                    room.request_play(original_command, audiofile, raum, user, send=True)
-                    room.Clientconnection.send({'LUNA_audio_play': audiofile})
-                    # Warten, bis der Raum bestätigt, es gesagt zu haben
-                    while room.request_play(original_command, audiofile, raum, user) == False:
-                        time.sleep(0.03)
-                    return
-        
+
         def route_listen(self, original_command, user, telegram=False):
             # Spezialfall berücksichtigen: Es kann beim besten Willen nicht ermittelt werden, wem LUNA zuhören soll. Einfach beenden.
             if user == None or user == 'Unknown':
-                Log.write('WARNING', 'Für einen Aufruf von luna.listen() konnte kein user als Ziel ermittelt werden.', conv_id=original_command, show=True)
+                Log.write('WARNING', 'Für einen Aufruf von luna.listen() konnte kein user als Ziel ermittelt werden.',
+                          conv_id=original_command, show=True)
                 return 'TIMEOUT_OR_INVALID'
             # Luna soll einem bestimmten user zuhören
-             # Ist der user in einem WebSocket raum?
+            # Ist der user in einem WebSocket raum?
             ws_answer = Websocket.listen(user, self.local_storage)
             if ws_answer is not None:
                 return ws_answer
-            current_waiting_room = ('',None)
+            current_waiting_room = ('', None)
             if self.telegram is not None:
                 if telegram == True or user not in self.Users.userlist:
                     # Dem Telegram-Thread Bescheid sagen, dass man auf eine Antwort wartet,
@@ -941,44 +995,49 @@ def runMain(commandMap=None, feedbackMap=None):
                     response = self.telegram_queue_output.pop(user, None)
                     if response is not None:
                         self.telegram_queued_users.remove(user)
-                        Log.write('ACTION', '--{}-- (Telegram): {}'.format(user.upper(), response['text']), conv_id=original_command, show=True)
+                        Log.write('ACTION', '--{}-- (Telegram): {}'.format(user.upper(), response['text']),
+                                  conv_id=original_command, show=True)
                         return response
                 else:
                     for name, room in self.rooms.items():
                         if user in room.users:
                             if current_waiting_room[0] == '':
-                                current_waiting_room = (name,room)
-                                room.request_listen(original_command,user,send=True)
+                                current_waiting_room = (name, room)
+                                room.request_listen(original_command, user, send=True)
                             if not name == current_waiting_room[0]:
                                 # Der Benutzer hat gerade den Raum gewechselt, das Gespräch muss folgen!
-                                current_waiting_room[1].request_listen(original_command,user,cancel=True,send=True)
+                                current_waiting_room[1].request_listen(original_command, user, cancel=True, send=True)
                                 while True:
-                                    cancel_response = current_waiting_room[1].request_listen(original_command, user, cancel=True)
+                                    cancel_response = current_waiting_room[1].request_listen(original_command, user,
+                                                                                             cancel=True)
                                     if not cancel_response == 'ongoing':
                                         break
                                     time.sleep(0.03)
                                 if not cancel_response == True:
                                     # Konnte nicht abgebrochen werden, wurde bereits gesagt
-                                    return cancel_response # , die in diesem Fall nämlich praktischerweise die Antwort des Nutzers enthält...
+                                    return cancel_response  # , die in diesem Fall nämlich praktischerweise die Antwort des Nutzers enthält...
                                 # Alles okay, wir fragen bei einem anderen Raum nach
                                 current_waiting_room[1].request_end_Conversation(original_command)
-                                current_waiting_room = (name,room)
-                                room.request_listen(original_command,user,send=True)
+                                current_waiting_room = (name, room)
+                                room.request_listen(original_command, user, send=True)
                             response = room.request_listen(original_command, user)
                             if not response == False:
                                 return response
                 time.sleep(0.03)
 
-        def route_query_modules(self, user, name=None, text=None, room=None, direct=False, origin_room=None, data=None, must_be_secure=False): #direct: True = Sprachaufruf , must_be_secure: True = Nur server module die SECURE markiert sind.
+        def route_query_modules(self, user, name=None, text=None, room=None, direct=False, origin_room=None, data=None,
+                                must_be_secure=False):  # direct: True = Sprachaufruf , must_be_secure: True = Nur server module die SECURE markiert sind.
             room, name = self.get_context(user, name, text, room, direct, origin_room)
             if not room == None:
                 if room == self.server_name:
-                    return self.Modules.query_threaded(user, name, text, direct=direct, origin_room=origin_room, data=data, must_be_secure=must_be_secure)
+                    return self.Modules.query_threaded(user, name, text, direct=direct, origin_room=origin_room,
+                                                       data=data, must_be_secure=must_be_secure)
                 else:
-                     if not must_be_secure:
+                    if not must_be_secure:
                         for room_name, raum in self.rooms.items():
                             if room_name.lower() == room.lower():
-                                response = raum.request_query_modules(user, name=name, text=text, direct=direct, origin_room=origin_room, data=data)
+                                response = raum.request_query_modules(user, name=name, text=text, direct=direct,
+                                                                      origin_room=origin_room, data=data)
                                 # Bin mir mit dem folgenden Abschnitt noch nicht ganz sicher. Eigentlich ist ein möglicher Zielraum doch (bei Sprachaufruf) das letzte,
                                 # was durchsucht werden muss... oder meint get_context was anderes..? Sagen wir mal, das hier kann man entfernen, wenn das Programm mal gut über mehrere Räume getestet ist :)
                                 '''if response == False:
@@ -988,18 +1047,19 @@ def runMain(commandMap=None, feedbackMap=None):
                                 else:'''
                                 return response
             else:
-                 return self.Modules.query_threaded(user, name, text, direct=direct, origin_room=origin_room, data=data, must_be_secure=must_be_secure)
-        
+                return self.Modules.query_threaded(user, name, text, direct=direct, origin_room=origin_room, data=data,
+                                                   must_be_secure=must_be_secure)
+
         def route_change_hotworddetection(self, original_command, room, changing_to):
             for name, room in self.rooms.items():
-                    if name.lower() == raum.lower():
-                        # Dem Raum den Auftrag erteilen, es zu sagen
-                        room.change_hotworddetection(changing_to, room, send=True)
-                        # Warten, bis der Raum bestätigt, es gemacht zu haben
-                        while room.request_say(original_command, room, changing_to) == False:
-                            time.sleep(0.03)
-                        return
-        
+                if name.lower() == raum.lower():
+                    # Dem Raum den Auftrag erteilen, es zu sagen
+                    room.change_hotworddetection(changing_to, room, send=True)
+                    # Warten, bis der Raum bestätigt, es gemacht zu haben
+                    while room.request_say(original_command, room, changing_to) == False:
+                        time.sleep(0.03)
+                    return
+
         def speechVariation(self, input):
             """
             This function is the counterpiece to the batchGen-function. It compiles the same
@@ -1012,10 +1072,10 @@ def runMain(commandMap=None, feedbackMap=None):
                 parse = input
             while "[" in parse and "]" in parse:
                 t_a = time.time()
-                sp0 = parse.split("[",1)
+                sp0 = parse.split("[", 1)
                 front = sp0[0]
-                sp1 = sp0[1].split("]",1)
-                middle = sp1[0].split("|",1)
+                sp1 = sp0[1].split("]", 1)
+                middle = sp1[0].split("|", 1)
                 end = sp1[1]
                 t_b = time.time()
                 parse = front + random.choice(middle) + end
@@ -1029,17 +1089,17 @@ def runMain(commandMap=None, feedbackMap=None):
             except KeyError:
                 self.local_storage['LUNA_context'] = {}
 
-            self.local_storage['LUNA_context'][user] = (room,module)
-            self.local_storage['LUNA_context'][origin_room] = (room,module)
-            self.local_storage['LUNA_context'][module] = (user,room)
-
+            self.local_storage['LUNA_context'][user] = (room, module)
+            self.local_storage['LUNA_context'][origin_room] = (room, module)
+            self.local_storage['LUNA_context'][module] = (user, room)
 
         def get_context(self, user, name, text, room, direct, origin_room):
             # Lädt das zuletzt aufgerufene Modul, wenn der Nutzer seine Anfrage mit "und" beginnt.
             # Grundvoraussetzung, die gegeben sein muss: Das Modul muss per Sprachbefehl aufgerufen worden sein!
 
             if name == None and not text == None and direct == True and not (user == None or user == 'Unknwon'):
-                if text.lower().startswith('und ') or (text.lower().startswith('noch') and ('ein' in text.lower() or 'mal' in text.lower())):
+                if text.lower().startswith('und ') or (
+                        text.lower().startswith('noch') and ('ein' in text.lower() or 'mal' in text.lower())):
                     # Es wird unterschieden zwischen drei Fällen:
                     # 1.: selber Nutzer, selbes Thema, ggf. anderer Raum (Wetter in ...; und in ...)
                     # 2.: selber Raum, selbes Thema, ggf. anderer Nutzer (Wer bin ich; und ich)
@@ -1068,7 +1128,7 @@ def runMain(commandMap=None, feedbackMap=None):
                         new_room = None
                         new_name = None
                         try:
-                            new_room,new_name = self.local_storage['LUNA_context'][user]
+                            new_room, new_name = self.local_storage['LUNA_context'][user]
                         except:
                             pass
                         if new_room is not None and new_name is not None:
@@ -1079,7 +1139,7 @@ def runMain(commandMap=None, feedbackMap=None):
                         new_room = None
                         new_name = None
                         try:
-                            new_room,new_name = self.local_storage['LUNA_context'][origin_room]
+                            new_room, new_name = self.local_storage['LUNA_context'][origin_room]
                         except:
                             pass
                         if new_room is not None and new_name is not None:
@@ -1087,27 +1147,27 @@ def runMain(commandMap=None, feedbackMap=None):
                     else:
                         Log.write('ERROR', '[Einfach dem Ferdi schicken, der weiß (ungefähr), wo das Problem ist]\n'
                                            'Tipp: Es hat was damit zu tun, dass add_to_context eben nur "ZIEMLICH SICHER" einen origin_room erhält...',
-                                           conv_id=text, show=True)
+                                  conv_id=text, show=True)
             return room, name
 
-        def end_Conversation(self,original_command):
+        def end_Conversation(self, original_command):
             for room in self.rooms.values():
                 room.request_end_Conversation(original_command)
-        
+
         def sendWebSocketEvent(self, event: str, data: dict):
             Websocket.sendEvent(event, data)
-        
+
         def translate(self, text, targetLang='de'):
             try:
                 request = Request(
-                'https://translate.googleapis.com/translate_a/single?client=gtx&sl=auto&tl=' + urllib.parse.quote(targetLang) + '&dt=t&q=' + urllib.parse.quote(
-                     text))
+                    'https://translate.googleapis.com/translate_a/single?client=gtx&sl=auto&tl=' + urllib.parse.quote(
+                        targetLang) + '&dt=t&q=' + urllib.parse.quote(
+                        text))
                 response = urlopen(request)
                 answer = json.loads(response.read())
                 return answer[0][0][0]
             except:
                 return text
-        
 
     class Logging:
         def __init__(self):
@@ -1132,7 +1192,8 @@ def runMain(commandMap=None, feedbackMap=None):
                 print(self.format(logentry, last_logentry))
 
         def format(self, logentry, last_logentry):
-            if logentry['type'] == 'ERROR' or logentry['type'] == 'WARNING' or logentry['type'] == 'DEBUG' or logentry['type'] == 'INFO' or logentry['type'] == 'TRACE':
+            if logentry['type'] == 'ERROR' or logentry['type'] == 'WARNING' or logentry['type'] == 'DEBUG' or logentry[
+                'type'] == 'INFO' or logentry['type'] == 'TRACE':
                 spaces = ''
                 if last_logentry['type'] == 'ACTION':
                     spaces = '\n\n'
@@ -1147,7 +1208,8 @@ def runMain(commandMap=None, feedbackMap=None):
                     if last_logentry['conv_id'] == logentry['conv_id']:
                         spaces = ''
                 else:
-                    if not last_logentry['conv_id'] == logentry['conv_id']: # conversation_id wird am Anfang original_command sein, aber in weiser Voraussicht hab ich das schon mal umbenannt...
+                    if not last_logentry['conv_id'] == logentry[
+                        'conv_id']:  # conversation_id wird am Anfang original_command sein, aber in weiser Voraussicht hab ich das schon mal umbenannt...
                         spaces = '\n'
                     if last_logentry['conv_id'] == 'HW_DETECTED':
                         spaces = ''
@@ -1156,7 +1218,6 @@ def runMain(commandMap=None, feedbackMap=None):
             else:
                 textline = logentry['content']
             return textline
-
 
     class Room_Dock:
         def __init__(self, clientconnection, addr):
@@ -1170,7 +1231,7 @@ def runMain(commandMap=None, feedbackMap=None):
             self.room_guessed_user = ''
             self.server_guessed_user = ''
 
-            self.distribute_dict = {} # Cache für send_update_information
+            self.distribute_dict = {}  # Cache für send_update_information
 
             rt = Thread(target=self.start_connection)
             rt.daemon = True
@@ -1181,10 +1242,10 @@ def runMain(commandMap=None, feedbackMap=None):
             # user hat den Raum gewechselt; Anfrage abbrechen, sofern noch möglich!
             if cancel == True:
                 if send == True:
-                    self.Clientconnection.send_buffer({'LUNA_room_cancel_say':[original_command]})
+                    self.Clientconnection.send_buffer({'LUNA_room_cancel_say': [original_command]})
                     return
-                #print("     Clientconnection.readanddelete")
-                response = self.Clientconnection.readanddelete('LUNA_room_confirms_cancel_say_{}'.format(original_command))
+                response = self.Clientconnection.readanddelete(
+                    'LUNA_room_confirms_cancel_say_{}'.format(original_command))
                 if response is not None:
                     return response
                 else:
@@ -1192,27 +1253,25 @@ def runMain(commandMap=None, feedbackMap=None):
             # alles normal, einfach auf Bestätigung warten
             else:
                 if send == True:
-                    #print("     Clientconnection.send_buffer")
-                    self.Clientconnection.send_buffer({'LUNA_room_say':[{'original_command':original_command,'text':text,'room':raum,'user':user}]})
+                    self.Clientconnection.send_buffer({'LUNA_room_say': [
+                        {'original_command': original_command, 'text': text, 'room': raum, 'user': user}]})
                     return
-                #print("     Clientconnection.readanddelete")
                 response = self.Clientconnection.readanddelete('LUNA_room_confirms_say_{}'.format(original_command))
                 if response is not None:
                     return True
                 else:
                     return False
-        
-        def request_play(self, original_command, audiofile, raum, user, cancel=False, send=False):
+
+        def request_play(self, original_command, audiofile, raum, user, priority, cancel=False, send=False):
             # Verschickt Audiodateien zum Abspielen an den Raum und returnt True, wenn diese abgespielt wurden
             # user hat den Raum gewechselt; Anfrage abbrechen, sofern noch möglich!
-            print("Methode: request_play in Room_Dock")
             try:
                 if cancel == True:
-                    print("cancel = True")
                     if send == True:
-                        self.Clientconnection.send_buffer({'LUNA_room_cancel_play':[original_command]})
+                        self.Clientconnection.send_buffer({'LUNA_room_cancel_play': [original_command]})
                         return
-                    response = self.Clientconnection.readanddelete('LUNA_room_confirms_cancel_play_{}'.format(original_command))
+                    response = self.Clientconnection.readanddelete(
+                        'LUNA_room_confirms_cancel_play_{}'.format(original_command))
                     if response is not None:
                         return response
                     else:
@@ -1220,35 +1279,35 @@ def runMain(commandMap=None, feedbackMap=None):
                 # alles normal, einfach auf Bestätigung warten
                 else:
                     if send == True:
-                        print("send == True")
-                        self.Clientconnection.send_buffer({'LUNA_room_play':[{'original_command':original_command,'audiofile':audiofile,'room':raum,'user':user}]})
+                        self.Clientconnection.send_buffer({'LUNA_room_play': [
+                            {'original_command': original_command, 'audiofile': audiofile, 'room': raum,
+                             'user': user, 'priority': priority}]})
                         return
-                    response = self.Clientconnection.readanddelete('LUNA_room_confirms_play_{}'.format(original_command))
-                    print(response)
+                    response = self.Clientconnection.readanddelete(
+                        'LUNA_room_confirms_play_{}'.format(original_command))
                     if response is not None:
-                        print("response is       not         None")
                         return True
                     else:
-                        print("response is None")
                         return False
             except:
                 traceback.print_exc()
 
-        
         def request_listen(self, original_command, user, cancel=False, send=False):
             # Verschickt Anfragen zum Zuhören an den Raum und returnt den gesprochenen Text, sofern fertig
             # user hat den Raum gewechselt; Anfrage abbrechen, sofern noch möglich!
             if cancel == True:
                 if send == True:
-                    self.Clientconnection.send_buffer({'LUNA_room_cancel_listen':[original_command]})
+                    self.Clientconnection.send_buffer({'LUNA_room_cancel_listen': [original_command]})
                     return
-                response = self.Clientconnection.readanddelete('LUNA_room_confirms_cancel_listen_{}'.format(original_command))
+                response = self.Clientconnection.readanddelete(
+                    'LUNA_room_confirms_cancel_listen_{}'.format(original_command))
                 if response is not None:
                     if response == True:
                         # True: erfolgreich abgebrochen
                         return True
                     else:
-                        response = self.Clientconnection.readanddelete('LUNA_room_confirms_listen_{}'.format(original_command))
+                        response = self.Clientconnection.readanddelete(
+                            'LUNA_room_confirms_listen_{}'.format(original_command))
                         if response is not None:
                             # response: Antwort des Nutzers; es war wohl schon zu spät zum abbrechen
                             return response
@@ -1257,7 +1316,8 @@ def runMain(commandMap=None, feedbackMap=None):
             # alles normal, einfach auf Antwort warten
             else:
                 if send == True:
-                    self.Clientconnection.send_buffer({'LUNA_room_listen':[{'original_command':original_command,'user':user}]})
+                    self.Clientconnection.send_buffer(
+                        {'LUNA_room_listen': [{'original_command': original_command, 'user': user}]})
                     return
                 response = self.Clientconnection.readanddelete('LUNA_room_confirms_listen_{}'.format(original_command))
                 if response is not None:
@@ -1270,15 +1330,18 @@ def runMain(commandMap=None, feedbackMap=None):
                 original_command = text
             else:
                 original_command = name
-            self.Clientconnection.send_buffer({'LUNA_room_query_modules':[{'original_command':original_command, 'user':user, 'text':text, 'name':name, 'direct':direct, 'origin_room':origin_room, 'data':data}]})
+            self.Clientconnection.send_buffer({'LUNA_room_query_modules': [
+                {'original_command': original_command, 'user': user, 'text': text, 'name': name, 'direct': direct,
+                 'origin_room': origin_room, 'data': data}]})
             while True:
-                response = self.Clientconnection.readanddelete('LUNA_room_confirms_query_modules_{}'.format(original_command))
+                response = self.Clientconnection.readanddelete(
+                    'LUNA_room_confirms_query_modules_{}'.format(original_command))
                 if response is not None:
                     return response
                 time.sleep(0.03)
 
         def request_end_Conversation(self, original_command):
-            self.Clientconnection.send_buffer({'LUNA_room_end_Conversation':[original_command]})
+            self.Clientconnection.send_buffer({'LUNA_room_end_Conversation': [original_command]})
 
         def handle_online_requests(self):
             say_requests = []
@@ -1299,7 +1362,7 @@ def runMain(commandMap=None, feedbackMap=None):
                             say_requests.append(request)
                 # Aufträge bearbeiten
                 for request in say_requests:
-                    rst = Thread(target = self.thread_say, args=(request,))
+                    rst = Thread(target=self.thread_say, args=(request,))
                     rst.daemon = True
                     rst.start()
                     say_requests.remove(request)
@@ -1316,11 +1379,11 @@ def runMain(commandMap=None, feedbackMap=None):
                             listen_requests.append(request)
                 # Aufträge bearbeiten
                 for request in listen_requests:
-                    rlt = Thread(target = self.thread_listen, args=(request,))
+                    rlt = Thread(target=self.thread_listen, args=(request,))
                     rlt.daemon = True
                     rlt.start()
                     listen_requests.remove(request)
-                
+
                 # PLAY
                 # Neue Aufträge einholen
                 new_play_requests = self.Clientconnection.readanddelete('LUNA_server_play')
@@ -1333,11 +1396,11 @@ def runMain(commandMap=None, feedbackMap=None):
                             play_requests.append(request)
                 # Aufträge bearbeiten
                 for request in play_requests:
-                    rst = Thread(target = self.thread_play, args=(request,))
+                    rst = Thread(target=self.thread_play, args=(request,))
                     rst.daemon = True
                     rst.start()
                     play_requests.remove(request)
-                
+
                 # QUERY_MODULES
                 # Neue Aufträge einholen
                 new_query_requests = self.Clientconnection.readanddelete('LUNA_server_query_modules')
@@ -1350,8 +1413,11 @@ def runMain(commandMap=None, feedbackMap=None):
                             query_requests.append(request)
                 # Aufträge bearbeiten
                 for request in query_requests:
-                    response = Luna.route_query_modules(request['user'], name=request['name'], text=request['original_command'], room=request['room'], direct=request['direct'], origin_room=self.name)
-                    self.Clientconnection.send({'LUNA_server_confirms_query_modules_{}'.format(request['original_command']):response})
+                    response = Luna.route_query_modules(request['user'], name=request['name'],
+                                                        text=request['original_command'], room=request['room'],
+                                                        direct=request['direct'], origin_room=self.name)
+                    self.Clientconnection.send(
+                        {'LUNA_server_confirms_query_modules_{}'.format(request['original_command']): response})
                     query_requests.remove(request)
 
                 # END_CONVERSATION
@@ -1371,15 +1437,17 @@ def runMain(commandMap=None, feedbackMap=None):
                 if voice_recognition_request is not None:
                     self.room_guessed_user = voice_recognition_request
                 if not self.server_guessed_user == '':
-                    self.Clientconnection.send({'LUNA_user_server_guess':self.server_guessed_user})
-                    Log.write('ACTION', '--listening to {} (room: {})--'.format(self.server_guessed_user, self.name), conv_id='HW_DETECTED', show=True)
+                    self.Clientconnection.send({'LUNA_user_server_guess': self.server_guessed_user})
+                    Log.write('ACTION', '--listening to {} (room: {})--'.format(self.server_guessed_user, self.name),
+                              conv_id='HW_DETECTED', show=True)
                     self.server_guessed_user = ''
 
                 # LOGGING
                 new_logging_requests = self.Clientconnection.readanddelete('LUNA_LOG')
                 if new_logging_requests is not None:
                     for request in new_logging_requests:
-                        Log.write(request['type'], request['content'], info=request['info'], conv_id=request['conv_id'], show=request['show'])
+                        Log.write(request['type'], request['content'], info=request['info'], conv_id=request['conv_id'],
+                                  show=request['show'])
 
                 # SEND_UPDATE_INFORMATION
                 self.send_update_information()
@@ -1395,24 +1463,27 @@ def runMain(commandMap=None, feedbackMap=None):
             information_dict = {}
             for key in Luna.local_storage['keys_to_distribute']:
                 if not key in Luna.local_storage.keys():
-                    Log.write('WARNING', 'Der Schlüssel {} ist in local_storage nicht vorhanden und kann daher nicht an die Räume verteilt werden!'.format(key), show=True)
+                    Log.write('WARNING',
+                              'Der Schlüssel {} ist in local_storage nicht vorhanden und kann daher nicht an die Räume verteilt werden!'.format(
+                                  key), show=True)
                     Luna.local_storage['keys_to_distribute'].remove(key)
                     continue
                 information_dict[key] = Luna.local_storage[key]
-            self.Clientconnection.send({'LUNA_server_info':information_dict})
+            self.Clientconnection.send({'LUNA_server_info': information_dict})
 
         def thread_say(self, request):
-            Luna.route_say(request['original_command'],request['text'],request['room'],request['user'], request['output'])
-            self.Clientconnection.send({'LUNA_server_confirms_say_{}'.format(request['original_command']):True})
+            Luna.route_say(request['original_command'], request['text'], request['room'], request['user'],
+                           request['output'])
+            self.Clientconnection.send({'LUNA_server_confirms_say_{}'.format(request['original_command']): True})
 
         def thread_play(self, request):
-            print("thread_play in Room_Dock in server")
-            Luna.route_play(request['original_command'],request['audiofile'],request['room'],request['user'], request['output'])
-            self.Clientconnection.send({'LUNA_server_confirms_say_{}'.format(request['original_command']):True})
+            Luna.route_play(request['original_command'], request['audiofile'], request['room'], request['user'],
+                            request['output'])
+            self.Clientconnection.send({'LUNA_server_confirms_say_{}'.format(request['original_command']): True})
 
         def thread_listen(self, request):
-            response = Luna.route_listen(request['original_command'],request['user'], telegram=request['telegram'])
-            self.Clientconnection.send({'LUNA_server_confirms_listen_{}'.format(request['original_command']):response})
+            response = Luna.route_listen(request['original_command'], request['user'], telegram=request['telegram'])
+            self.Clientconnection.send({'LUNA_server_confirms_listen_{}'.format(request['original_command']): response})
 
         def recvall(self, sock, count):
             buf = b''
@@ -1433,7 +1504,7 @@ def runMain(commandMap=None, feedbackMap=None):
                     Rooms[self.name] = Devices_connecting[self.addr]
                     del Devices_connecting[self.addr]
                     Room_list.append(self.name)
-                    Luna.local_storage['rooms'][self.name] = {'name':self.name, 'users':[]}
+                    Luna.local_storage['rooms'][self.name] = {'name': self.name, 'users': []}
                     Luna.Analyzer.room_list = Room_list
                     break
                 time.sleep(0.01)
@@ -1457,6 +1528,112 @@ def runMain(commandMap=None, feedbackMap=None):
                     continue
             Log.write('WARNING', 'Verbindung mit Raum {} unterbrochen'.format(self.name), show=True)
 
+    class Windows_Pc:
+        def __init__(self, clientconnection, addr):
+            self.addr = addr
+            self.Clientconnection = clientconnection
+
+            self.pc_name = ''
+            self.users = []
+
+            self.room_guessed_user = ''
+            self.server_guessed_user = ''
+
+            self.distribute_dict = {}  # Cache für send_update_information
+
+            rt = Thread(target=self.start_connection)
+            rt.daemon = True
+            rt.start()
+
+        def handle_online_requests(self):
+            say_requests = []
+
+            while True:
+                # SAY
+                # Neue Aufträge einholen
+                new_say_requests = self.Clientconnection.readanddelete('LUNA_server_say')
+                if new_say_requests is not None:
+                    for request in new_say_requests:
+                        for existing_request in say_requests:
+                            if request['original_command'] == existing_request['original_command']:
+                                break
+                        else:
+                            say_requests.append(request)
+                # Aufträge bearbeiten
+                for request in say_requests:
+                    rst = Thread(target=self.thread_say, args=(request,))
+                    rst.daemon = True
+                    rst.start()
+                    say_requests.remove(request)
+
+                time.sleep(0.03)
+
+        def send_update_information(self):
+            # Verteilt die in keys_to_distribute festgelegten Daten aus dem Local_storage an die Räume
+            information_dict = {}
+            for key in Luna.local_storage['keys_to_distribute']:
+                if not key in Luna.local_storage.keys():
+                    Log.write('WARNING',
+                              'Der Schlüssel {} ist in local_storage nicht vorhanden und kann daher nicht an die Räume verteilt werden!'.format(
+                                  key), show=True)
+                    Luna.local_storage['keys_to_distribute'].remove(key)
+                    continue
+                information_dict[key] = Luna.local_storage[key]
+            self.Clientconnection.send({'LUNA_server_info': information_dict})
+
+        def recvall(self, sock, count):
+            buf = b''
+            while count:
+                newbuf = sock.recv(count)
+                if not newbuf: return None
+                buf += newbuf
+                count -= len(newbuf)
+            return buf
+
+        def start_connection(self):
+            # Informationen über den Raum empfangen...
+            time.sleep(0.5)
+            while True:
+                information_dict = self.Clientconnection.readanddelete('LUNA_Pc_info')
+                if information_dict is not None:
+                    self.pc_name = information_dict['name']
+                    self.user = information_dict['user']
+                    if self.user not in Luna.local_storage['users']:
+                        self.Clientconnection.send({"valid_user": False})
+                        new_username = self.Clientconnection.readanddelete("new_username")
+                        if new_username in Luna.local_storage['users']:
+                            self.Clientconnection.send({"valid_new_user": True})
+                        else:
+                            self.Clientconnection.send({"valid_new_use": False})
+                    else:
+                        self.Clientconnection.send({"valid_user": True})
+
+                    Windows_Pcs[self.name] = Devices_connecting[self.addr]
+                    del Devices_connecting[self.addr]
+                    Pc_list.append(self.name)
+                    Luna.local_storage['pcs'][self.name] = {'name': self.name, 'owner': []}
+                    Luna.Analyzer.room_list = Room_list
+                    break
+                time.sleep(0.01)
+
+            # ...und Informationen an den Raum senden.
+            self.send_update_information()
+            Log.write('INFO', 'Verbindung mit PC {} hergestellt'.format(self.pc_name), show=True)
+
+            # Alles geklärt, jetzt zur eigentlichen Aufgabe dieser Klasse...
+            self.handle_online_requests()
+
+            # PC ist offline? Aufräumen!
+            Windows_pcs.remove(self.pc_name)
+            del pcs[self.pc_name]
+            del Luna.local_storage['pcs'][self.pc_name]
+            for user in Local_storage['users'].values():
+                try:
+                    if user['pc'] == self.pc_name:
+                        del user['pc']
+                except KeyError:
+                    continue
+            Log.write('WARNING', 'Verbindung mit dem PC {} unterbrochen'.format(self.pc_name), show=True)
 
     class Network_Device:
         def __init__(self, conn, addr):
@@ -1468,7 +1645,7 @@ def runMain(commandMap=None, feedbackMap=None):
             self.type = ''
             self.name = ''
 
-            self.storage = {} # Speicher für beliebige, das Gerät betreffende Daten
+            self.storage = {}  # Speicher für beliebige, das Gerät betreffende Daten
 
             ndt = Thread(target=self.start_connection)
             ndt.daemon = True
@@ -1489,6 +1666,11 @@ def runMain(commandMap=None, feedbackMap=None):
                         # ein Raum? Übergeben an Room_Dock!
                         Devices_connecting[self.addr] = Room_Dock(self.Clientconnection, self.addr)
                         return
+                        """
+                        elif device_type == 'WINDOWS_RECHNER':
+                            # es handelt sich um einen Windowsrechner
+                            Devices_connecting[self.addr] = Windows_Pc(self.Clientconnection, self.addr)
+                        """
                     else:
                         device_name = self.Clientconnection.read('DEVICE_NAME')
                         if device_name is not None:
@@ -1496,7 +1678,8 @@ def runMain(commandMap=None, feedbackMap=None):
                             del Devices_connecting[self.addr]
                             self.type = device_type
                             self.name = device_name
-                            Log.write('INFO', 'Verbindung mit Gerät {} ({}) hergestellt'.format(self.name, self.type), show=True)
+                            Log.write('INFO', 'Verbindung mit Gerät {} ({}) hergestellt'.format(self.name, self.type),
+                                      show=True)
                             break
                 time.sleep(0.03)
 
@@ -1507,7 +1690,6 @@ def runMain(commandMap=None, feedbackMap=None):
                     Log.write('INFO', 'Verbindung mit Gerät {} ({}) unterbrochen'.format(self.name, self.type))
                     break
                 time.sleep(0.5)
-
 
     def updateFeedback():
         if feedbackMap is not None:
@@ -1532,7 +1714,7 @@ def runMain(commandMap=None, feedbackMap=None):
         juna.createJavalogger(Log)
 
     # aus config.json laden
-    with open(relPath+'config.json', 'r') as config_file:
+    with open(relPath + 'config.json', 'r') as config_file:
         config_data = json.load(config_file)
 
     System_name = config_data['System_name']
@@ -1540,26 +1722,26 @@ def runMain(commandMap=None, feedbackMap=None):
     Home_location = config_data["Home_location"]
     Local_storage = config_data['Local_storage']
     websocket_mode = config_data['websocket']
-    Network_Key = base64.b64decode(config_data['Network_Key'].encode('utf-8')) # sehr umständliche Decoder-Zeile. Leider nötig :(
+    Network_Key = base64.b64decode(
+        config_data['Network_Key'].encode('utf-8'))  # sehr umständliche Decoder-Zeile. Leider nötig :(
 
     Local_storage['LUNA_PATH'] = absPath
 
-
     Open_mode = config_data['Open_mode']
-
 
     Devices_connecting = {}
     Rooms = {}
+    Windows_Pcs = {}
     Other_devices = {}
 
     Room_list = []
+    Pc_list = []
 
     Users = Users()
     Modules = Modules()
     Analyzer = Sentence_Analyzer(room_list=Room_list)
     Luna = LUNA()
     Luna.local_storage['LUNA_starttime'] = time.time()
-
 
     time.sleep(2)
 
@@ -1578,9 +1760,8 @@ def runMain(commandMap=None, feedbackMap=None):
             tgt.start()
         Log.write('', '', show=True)
 
-
     Luna.Modules.start_continuous()
-    
+
     if websocket_mode.lower() == 'disabled':
         pass
     elif websocket_mode.lower() == 'enabled':
@@ -1597,7 +1778,7 @@ def runMain(commandMap=None, feedbackMap=None):
     while True:
         sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         try:
-            sock.bind(('',port))
+            sock.bind(('', port))
             break
         except:
             sock.close()
@@ -1631,11 +1812,11 @@ def runMain(commandMap=None, feedbackMap=None):
             break
         # Ein entsprechendes Geräte-Objekt erstellen und ihm die Verbindung überlassen
         Devices_connecting[addr] = Network_Device(conn, addr)
-    
+
     for room in LUNA.room_list:
         text = "Der Server wurde gestoppt, daher werden auch alle Cleients gestoppt. Auf Wiedersehen!"
-        Modulewrapper.say(text, room=room,output='auto')
-        
+        Modulewrapper.say(text, room=room, output='auto')
+
     sock.close()
     Modules.stop_continuous()
     Log.write('', '------ Räume werden beendet...', show=True)
@@ -1648,6 +1829,7 @@ def runMain(commandMap=None, feedbackMap=None):
     for device in Other_devices.values():
         device.Clientconnection.stop()
     Log.write('', '\n[{}] Auf wiedersehen!\n'.format(System_name.upper()), show=True)
+
 
 if __name__ == "__main__":
     runMain()
