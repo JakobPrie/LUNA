@@ -246,7 +246,6 @@ class Audio_Output:
     def stop_playback(self):
         for item in self.playback_audio_buffer:
             if item == 'Endederdurchsage':
-                self.playback_audio_buffer.remove(item)
                 break
             else:
                 self.playback_audio_buffer.remove(item)
