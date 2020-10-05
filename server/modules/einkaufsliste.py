@@ -2,8 +2,6 @@ import traceback
 import random
 import traceback
 
-from module_skills import get_enumerate, delete_duplications, assamble_new_items, assamble_array, get_text_beetween
-
 # Priorität gesetzt, da ansonsten manchmal das modul reload_modules.py aufgerufen wurde.
 PRIORITY = 2
 SECURE = True
