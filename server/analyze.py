@@ -659,6 +659,3 @@ class Sentence_Analyzer:
             time = self.zeit_setzen(time, second=0)
             time = self.zeit_setzen(time, microsecond=0)
         return {'town':town, 'room':room, 'rooms':rooms, 'datetime':time, 'time':{'day':time.day, 'month':time.month, 'year':time.year, 'hour':time.hour, 'minute':time.minute, 'second':time.second}}
-
-if __name__ == '__main__':
-    main()
