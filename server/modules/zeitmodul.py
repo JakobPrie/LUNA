@@ -1,7 +1,10 @@
 from time import sleep
+from module_skills import get_text_beetween, get_enumerate
 import datetime
 
+
 SECURE = True
+
 
 def isValid(text):
     text = text.lower()
@@ -22,7 +25,8 @@ def isValid(text):
         return True
     elif 'timer' in text or 'stoppuhr' in text or 'countdown' in text:
         return True
-        
+
+
 def handle(text, luna, profile):
     text = text.lower()
     now = datetime.datetime.now()
@@ -47,7 +51,7 @@ def handle(text, luna, profile):
                 luna.say('Dann wünsche ich dir dabei viel Erfolg!')
             else:
                 luna.say('Dann schlaf ruhig weiter, es ist noch viel zu früh, um aufzustehen.')
-        elif time >= 6 and time<= 10:
+        elif time >= 6 and time <= 10:
             luna.say('Guten Morgen, {}'.format(luna.user))
         elif time is 11 or time is 12:
             luna.say('Wurde aber auch langsam Zeit, {}. Aber dennoch auch dir einen guten Morgen.'.format(luna.user))
@@ -55,12 +59,14 @@ def handle(text, luna, profile):
             luna.say(
                 'Ob es noch Morgen ist, liegt wohl im Blickwinkel des Betrachters. Ich würde eher sagen, dass es Mittag oder Nachmittag ist.')
         elif time >= 19 and time <= 3:
-            luna.say('Also Morgen ist es auf jeden Fall nicht mehr. Daher wünsche ich dir einfach Mal einen guten Abend.')
+            luna.say(
+                'Also Morgen ist es auf jeden Fall nicht mehr. Daher wünsche ich dir einfach Mal einen guten Abend.')
         else:
             luna.say('Hallo, {}'.format(luna.user))
     elif 'guten' in text and 'abend' in text:
         if time >= 6 and time <= 17:
-            luna.say('Ob es noch Abend ist, liegt wohl im Blickwinkel des Betrachters. In Amerika ist es jetzt in der Tat Abend.')
+            luna.say(
+                'Ob es noch Abend ist, liegt wohl im Blickwinkel des Betrachters. In Amerika ist es jetzt in der Tat Abend.')
         elif time >= 18 and time <= 5:
             luna.say('Gute nacht, {}'.foramt(luna.user))
         else:
@@ -111,23 +117,83 @@ def timer(text, luna):
             luna.say('Okay, soll ich eine Stoppuhr nur für dich oder für alle starten?')
             response = luna.listen()
             if 'mich' in response or 'meine' in response:
-                stoppuhr('starte meine stoppuhr')
+                stopwatch('starte meine stoppuhr')
             else:
-                stoppuhr('starte die stoppuhr')
+                stopwatch('starte die stoppuhr')
         else:
             luna.say('Okay. Dann mach ich nichts.')
     elif 'stell' in text or 'beginn' in text:
-        pass
-    else:
-        # hier muss noch das ganze verfollständigt werden
-        text = 'Timer abgelaufen.'
-        if 'essen' in text:
-            text = 'Guck doch mal nach deinem Essen.'
-        E_eins = {'Zeit': luna.analysis['datetime'], 'Text': text, 'Benutzer': luna.user}
-        if 'timer' in luna.local_storage.keys():
-            luna.local_storage['timer'].append(E_eins)
+        text = text.replace(' auf ', ' in ')
+        time = luna.Analyzer.analyze(text)['datetime']
+        print(time)
+        if luna.room.lower() == 'küche':
+            text = "Guck doch mal nach deinem Essen, vielleicht ist es ja schon fertig."
         else:
-            luna.local_storage['timer'] = [E_eins]
+            text = "Dein Timer ist abgelaufen."
+
+        duration = get_text_beetween('auf', text, output='String')
+
+        E_eins = {'Zeit': time, 'Text': text, 'Benutzer': luna.user, 'Raum': luna.room, 'Dauer': duration}
+        if 'Timer' in luna.local_storage.keys():
+            luna.local_storage['Timer'].append(E_eins)
+        else:
+            luna.local_storage['Timer'] = [E_eins]
+
+    elif 'lösch' in text:
+        user_timer = []
+        if 'Timer' in luna.local_storage.keys():
+            for item in luna.local_storage['Timer']:
+                if luna.user == item["Benutzer"]:
+                    user_timer.append(item)
+
+            if 'von' in text:
+                duration = get_text_beetween('von', text, output='String')
+                for item in user_timer:
+                    if item["Dauer"] == duration:
+                        timer = luna.local_storage["Timer"].remove(item)
+                        luna.local_storage["Timer"] = timer
+                        luna.say(correct_output(
+                            ["Alles klar, ich habe den Teimer mit der Dauer " + item["Dauer"] + " gelöscht."],
+                            ["Alles klar, ich habe den Timer mit der Dauer " + item["Dauer"] + " gelöscht."]))
+                        break
+            else:
+                if luna.telegram_call:
+                    text = "Folgende Timer habe ich in deiner Liste gefunden:\n"
+                    i = 1
+                    for item in user_timer:
+                        temp_string = str(i)+". Dauer: "+item["Dauer"]+" Du hast den Timer im Raum '"+item["Raum"]+"' gestellt.\n"
+                        text = text + temp_string
+                    text = text + "Bitte schreib nur die Ziffer des Timers, welcher gelöscht werden soll."
+                    luna.say(text, output='telegram') #Der output ist eigentlich unnötig, aber wir gehen auf nummer sicher
+                    number = luna.listen()
+                    if number <= len(user_timer):
+                        timer = luna.local_storage["Timer"].remove(user_timer[int(number)-1])
+                        luna.say("Ich habe den Timer mit der Dauer "+item["Dauer"]+" gelöscht!", output='telegram')
+                    else:
+                        luna.say("Deine Eingabe war ungültig!", output='telegram')
+                else:
+                    luna.say(
+                        "Ich werde dir jetzt die Zeitlängen aller Timer von dir vorlesen. Du sagst dann einfach ja, wenn es das richtige ist.")
+                    for item in user_timer:
+                        luna.say(item["Dauer"])
+                        response = luna.listen()
+                        if "ja" in response:
+                            timer = luna.local_storage["Timer"].remove(item)
+                            luna.local_storage["Timer"] = timer
+                            luna.say(correct_output(
+                                ["Alles klar, ich habe den Teimer mit der Dauer " + item["Dauer"] + " gelöscht."],
+                                ["Alles klar, ich habe den Timer mit der Dauer " + item["Dauer"] + " gelöscht."]))
+                            break
+
+        else:
+            luna_array = ["Du hast noch gar keinen Teimer gestellt, daher kann ich auch keinen löschen"]
+            telegram_array = ["Du hast noch gar keinen Timer gestellt, daher kann ich auch keinen löschen"]
+            luna.say(correct_output(luna_array, telegram_array))
+
+    elif 'beend' in text:
+        luna.say('Ich kann einen Timer nicht beenden, nur löschen. Vielleicht meinst du ja die Stoppuhr.')
+    else:
+        luna.say('Leider weiß ich nicht, was ich mit dem Timer machen soll.')
 
 
 def stopwatch(text, luna):
@@ -149,9 +215,11 @@ def stopwatch(text, luna):
             if 'stoppuhr' in luna.local_storage.keys():
                 luna.say('Es läuft bereits eine Stoppuhr. Soll ich diese erst stoppen?')
                 response = luna.listen()
-                if 'ja' in text:
-                    luna.say('Alles klar. Die alte Stoppuhr wurde bei {} gestoppt und eine neue gestartet.')
+                if 'ja' in response:
+                    luna.say('Alles klar. Die alte Stoppuhr wurde bei {} gestoppt und eine neue gestartet.'.format(get_time(nd['stoppuhr']), get_time_differenz(nd['stoppuhr'])))
                     luna.local_storage['stoppuhr'] = datetime.datetime.now()
+                else:
+                    luna.say('Alles klar, die alte Stoppuhr läuft weiter.')
             else:
                 luna.say('Alles klar, die Stoppuhr wurde um {} gestartet.'.format(get_time(datetime.datetime.now())))
                 luna.local_storage['stoppuhr'] = datetime.datetime.now()
@@ -161,9 +229,11 @@ def stopwatch(text, luna):
             nutzer = luna.nutzer
             nutzerdictionary = luna.local_storage.get('users')
             nd = nutzerdictionary.get(nutzer)
-            if 'stoppuhr' in nd.keys():
+            print(nd['stoppuhr'])
+            if 'stoppuhr' in nd.keys() and nd['stoppuhr'] != '':
                 luna.say('Alles klar, die Stoppuhr wurde um {} gestoppt. Sie dauerte {}.'.format(
                     get_time(nd['stoppuhr']), get_time_differenz(nd['stoppuhr'])))
+                nd['stoppuhr'] = ''
             else:
                 luna.say('Es wurde noch keine Stoppuhr gestartet. Soll ich eine starten?')
                 response = luna.listen()
@@ -173,18 +243,17 @@ def stopwatch(text, luna):
                             get_time(get_time(datetime.datetime.now()))))
                     nd['stoppuhr'] = datetime.datetime.now()
         else:
-            if 'stoppuhr' in luna.local_storage.keys():
-                luna.say('Alles klar, die Stoppuhr wurde um {} gestoppt. Sie dauerte {}.'.format(
-                    get_time(datetime.datetime.now()), get_time_differenz(luna.local_storage['stoppuhr'], datetime.datetime.now(), luna)))
-                luna.local_storage['stoppuhr'] == []
+            print(luna.local_storage['stoppuhr'])
+            if 'stoppuhr' in luna.local_storage.keys() and luna.local_storage['stoppuhr'] != '':
+                luna.say('Alles klar, die Stoppuhr wurde um {} gestoppt. Sie dauerte {}.'.format(get_time(datetime.datetime.now()), get_time_differenz(luna.local_storage["stoppuhr"])))
+                luna.local_storage['stoppuhr'] = ''
             else:
                 luna.say('Es wurde noch keine Stoppuhr gestartet. Soll ich eine starten?')
                 response = luna.listen()
                 if 'ja' in response:
                     luna.say('Alles klar, Stoppuhr wurde um {} gestartet'.format(
-                        get_time(get_time(datetime.datetime.now()))))
+                        get_time(datetime.datetime.now())))
                     luna.local_storage['stoppuhr'] = datetime.datetime.now()
-
     else:
         luna.say(
             'Ich kann die Stoppuhr nur starten oder stoppen.')  # bald sollte noch eine Pause-Funktion hinzugefügt werden
@@ -195,7 +264,7 @@ def countdown(text, luna):
     timecode = -1
     for i in range(len(text)):
         if text[i] is 'von':
-            timecode = int(text[i + 1])
+            timecode = int(text[i+1])
     if 'minute' in text:
         timecode = timecode * 60
     elif 'stunde' in text:
@@ -212,43 +281,55 @@ def countdown(text, luna):
     else:
         luna.say('Tut mir leid, leider habe ich nicht verstanden, von wo ich herunter zählen soll')
 
-def get_time_differenz(start_time, time, luna):
-    aussage = []
-    dz = time - start_time
-    print(dz)
-    years = datetime.strptime(dz, '%Y')
-    months = datetime.strptime(dz, '%m')
-    days = datetime.strptime(dz, '%d')
-    hours = dz.strptime('%H')
-    minutes = datetime.strptime(dz, '%M')
-    seconds = datetime.strptime(dz, '%S')
 
-    if years is 1:
+def get_time_differenz(start_time, time=datetime.datetime.now()):
+    aussage = []
+
+    dz = start_time - time
+    print(dz)
+    days = dz.days
+    seconds = dz.seconds
+    microseconds = dz.microseconds
+
+    years = 0
+    hours = 0
+    minutes = 0
+
+    if days >= 365:
+        years = int(days / 365)
+        days = days % 365
+    if seconds >= 3600:
+        hours = int(seconds / 3600)
+        seconds = seconds % 3600
+    if seconds >= 60:
+        minutes = int(seconds / 60)
+        seconds = seconds % 60
+    if microseconds >= 5:
+        seconds += 1
+
+    if years == 1:
         aussage.append('einem Jahr')
     elif years > 1:
         aussage.append(str(years) + ' Jahren')
-    if months is 1:
-        aussage.append('einem Monat')
-    elif months > 1:
-        aussage.append(str(months) + ' Monaten')
-    if days is 1:
+    if days == 1:
         aussage.append('einem Tag')
     elif days > 1:
         aussage.append(str(days) + ' Tagen')
-    if hours is 1:
+    if hours == 1:
         aussage.append('einer Stunde')
     elif hours > 1:
         aussage.append(str(hours) + ' Stunden')
-    if minutes is 1:
+    if minutes == 1:
         aussage.append('einer Minute')
     elif minutes > 1:
         aussage.append(str(minutes) + ' Minuten')
-    if seconds is 1:
+    if seconds == 1:
         aussage.append('einer Sekunde')
     elif seconds > 1:
         aussage.append(str(seconds) + ' Sekunden')
 
-    return luna.enumerate(aussage)
+    output = get_enumerate(aussage)
+    return output
 
 
 def get_time(i):
