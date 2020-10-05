@@ -661,10 +661,3 @@ class Sentence_Analyzer:
             time = self.zeit_setzen(time, second=0)
             time = self.zeit_setzen(time, microsecond=0)
         return {'town':town, 'room':room, 'rooms':rooms, 'datetime':time, 'time':{'day':time.day, 'month':time.month, 'year':time.year, 'hour':time.hour, 'minute':time.minute, 'second':time.second}}
-
-def main():
-    Analyzer = Sentence_Analyzer(room_list=['Wohnzimmer', 'Schlafzimmer'], default_location='Weitersburg')
-    print(Analyzer.analyze('Welcher Tag ist der 23.12.?'))
-
-if __name__ == '__main__':
-    main()
