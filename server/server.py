@@ -450,8 +450,6 @@ def runMain(commandMap=None, feedbackMap=None):
                     output = 'telegram'
             except KeyError:
                 print("KeyError")
-            if output == 'auto':
-                output = 'telegram' if self.room == 'Telegram' else 'speech'
             # Noch ne Variante: Der Nutzer ist nur über Telegram bekannt...
             if user not in self.userlist and user in self.local_storage['LUNA_telegram_name_to_id_table'].keys():
                 if not 'telegram' in output.lower():
@@ -459,9 +457,10 @@ def runMain(commandMap=None, feedbackMap=None):
 
             chunk = 4096
             frame_rate = audiofile.getframerate() * 2
+            channels = audiofile.getnchannels()
 
             format = {'format': 8,
-                      'channels': 1,
+                      'channels': channels,
                       'rate': frame_rate,
                       'chunk': chunk}
 
@@ -534,15 +533,15 @@ def runMain(commandMap=None, feedbackMap=None):
             Luna.route_change_hotworddetection(room, changing_to)
 
         def batchGen(batch):
-            """
-            With the batchGen-function you can generate fuzzed compare-strings
-            with the help of a easy syntax:
-                "Wann [fährt|kommt] [der|die|das] nächst[e,er,es] [Bahn|Zug]"
-            is compiled to a list of sentences, each of them combining the words
-            in the brackets in all different combinations.
-            This list can then fox example be used by the batchMatch-function to
-            detect special sentences.
-            """
+             """
+             Mit der BatchGen-Funktion können Sie unscharfe Vergleichszeichenfolgen generieren
+             mit Hilfe einer einfachen Syntax:
+                 "Wann [kommt | kommt] [der | die | das] näherst [e, er, es] [Bahn | Zug]"
+             wird zu einer Liste von Sätzen zusammengestellt, von denen jeder die Wörter kombiniert
+             in den Klammern in allen verschiedenen Kombinationen.
+             Diese Liste kann dann fox Beispiel von der batchMatch-Funktion verwendet werden, um
+             spezielle Sätze erkennen.
+             """
             outlist = []
             ct = 0
             while len(batch) > 0:
@@ -570,9 +569,9 @@ def runMain(commandMap=None, feedbackMap=None):
 
         def speechVariation(input):
             """
-            This function is the counterpiece to the batchGen-function. It compiles the same
-            sentence-format as given there but it only picks one random variant and directly
-            pushes it into luna. It returns the generated sentence.
+            Diese Funktion ist das Gegenstück zur BatchGen-Funktion. Es kompiliert das gleiche
+            Satzformat wie dort angegeben, aber es wird nur eine zufällige Variante und direkt ausgewählt
+            schiebt es in Luna. Es gibt den generierten Satz zurück.
             """
             if not isinstance(input, str):
                 parse = random.choice(input)
@@ -605,11 +604,14 @@ def runMain(commandMap=None, feedbackMap=None):
                 return luna_array
 
         def correct_output_automate(self, text):
+            # Diese Funktion soll Wörter, die immer korregiert werden sollen, gleich berichtigen,
+            # dass nicht jedes Mal die correct_output aufgerufen werden muss und diese manuell
+            # berichtigt werden müssen
             if self.telegram_call:
-                text.replace(' Uhr ', ':')
+                text = text.replace(' Uhr ', ':')
             else:
-                text.replace('Tiffany', 'Tiffanie')
-                text.replace('Timer', 'Teimer')
+                text = text.replace('Tiffany', 'Tiffanie')
+                text = text.replace('Timer', 'Teimer')
             return text
 
     class Modulewrapper_continuous:
@@ -889,8 +891,6 @@ def runMain(commandMap=None, feedbackMap=None):
                         return
 
         def route_play(self, original_command, audiofile, raum, user, output, priority):
-            if self.presentation_mode and user in self.Users.userlist:
-                output = 'speech'
             Log.write('DEBUG', {'Action': 'route_play()', 'conv_id': original_command, 'raum': raum, 'user': user,
                                 'output': output, 'priority': priority}, conv_id=original_command, show=False)
             if ('telegram' in output.lower()) or (user not in self.Users.userlist and user is not None):
