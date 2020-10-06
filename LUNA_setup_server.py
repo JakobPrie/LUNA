@@ -108,7 +108,7 @@ if not config_data['Network_Key'] == '':
               'Ein längerer Schlüssel ist deutlich sicherer, kann aber auf manchen Geräten zu Geschwindigkeitsproblemen führen.')
         key_len = frage_nach_zahl('Länge des Sicherheitsschlüssels (8, 16 oder 32) [Standard ist 32]: ', 32, allowed_answers=[8,16,32])
         print('Ein neuer Schlüssel der Länge {} wird generiert...\n'.format(key_len))
-        config_data['TNetwork_Key'] = generate_key(key_len)
+        config_data['Network_Key'] = generate_key(key_len)
         time.sleep(1)
     else:
         print('Es wird kein neuer Schlüssel generiert.\n')
@@ -119,7 +119,7 @@ else:
           'Ein längerer Schlüssel ist deutlich sicherer, kann aber auf manchen Geräten zu Geschwindigkeitsproblemen führen.')
     key_len = frage_nach_zahl('Länge des Sicherheitsschlüssels (8, 16 oder 32) [Standard ist 32]: ', 32, allowed_answers=[8,16,32])
     print('Ein neuer Schlüssel der Länge {} wird generiert...\n'.format(key_len))
-    config_data['TNetwork_Key'] = generate_key(key_len)
+    config_data['Network_Key'] = generate_key(key_len)
     time.sleep(1.5)
 
 default = config_data['telegram']
