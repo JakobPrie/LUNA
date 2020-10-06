@@ -1,6 +1,6 @@
 import traceback
 import random
-from ./resources/module_skills import 
+from module_skills import assamble_array, get_enumerate, get_text_beetween
 
 # Priorität gesetzt, da ansonsten manchmal das modul reload_modules.py aufgerufen wurde.
 PRIORITY = 2
