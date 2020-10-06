@@ -98,7 +98,7 @@ time.sleep(1)
 
 print('Als nächstes geht es um die Generierung eines Schlüssels für die sichere Kommunikation zwischen deinen {}-Geräten.'.format(system_name))
 enterContinue()
-if not config_data['TNetwork_Key'] == '':
+if not config_data['Network_Key'] == '':
     print('\n' + color.YELLOW + 'ACHTUNG:' + color.END + ' Es wurde bereits eine vorhandene Konfiguration erkannt.\n'
           'Möchtest du einen neuen Schlüssel generieren? Wenn du "Ja" auswählst, musst du Räume, die du bereits mit dem Setup-Assistenten eingerichtet hast, neu einrichten.')
     antwort = ja_nein_frage('Neuen Schlüssel generieren [Ja / Nein]? [Standard ist "Nein"]: ', False)
