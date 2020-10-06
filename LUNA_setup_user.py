@@ -19,7 +19,7 @@ def end_config(config_data, system_name):
           'Dort kannst du sie jederzeit bearbeiten, für eine andere {}-Installation kopieren oder persönliche Module für den Nutzer hinzufügen.\n'
           'Als nächstes kannst du einen weiteren Nutzer einrichten '
           'oder mit dem entsprechenden Assistenten Räume hinzufügen, sofern nicht bereits geschehen.'.format(system_name,config_data['User_Info']['name'],system_name))
-    with open('server/LUNA_config.json', 'r') as server_config_file:
+    with open('server/config.json', 'r') as server_config_file:
         server_config_data = json.load(server_config_file)
     if server_config_data['use_facerec']:
         time.sleep(1)
@@ -53,14 +53,14 @@ if not os.path.exists('server/users'):
     enterFinalize()
     sys.exit()
 
-if not os.path.exists('server/LUNA_config.json'):
-    print('\n' + color.RED + '[ERROR]' + color.END + ' Die nötigen Dateien ("server/LUNA_config.json") für diesen Setup-Schritt konnten nicht gefunden werden.\n'
+if not os.path.exists('server/config.json'):
+    print('\n' + color.RED + '[ERROR]' + color.END + ' Die nötigen Dateien ("server/config.json") für diesen Setup-Schritt konnten nicht gefunden werden.\n'
           'Hast du die Dateien heruntergeladen?\n'
           'Befindet sich das Setup-Skript im richtigen Ordner?')
     enterFinalize()
     sys.exit()
 
-with open('server/LUNA_config.json', 'r') as server_config_file:
+with open('server/config.json', 'r') as server_config_file:
     server_config_data = json.load(server_config_file)
 system_name = server_config_data['System_name']
 
