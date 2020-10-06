@@ -76,27 +76,27 @@ def end_config(config_data, system_name):
           'oder mit dem entsprechenden Assistenten Nutzer hinzufügen, sofern nicht bereits geschehen.'.format(system_name, config_data['Room_name']))
     text = input('[ENTER drücken zum beenden]')
     print('\nDie neuen Daten werden gespeichert...')
-    with open(config_data['Room_name'] + '/LUNA_config.json', 'w') as config_file:
+    with open(config_data['Room_name'] + '/config.json', 'w') as config_file:
         json.dump(config_data, config_file, indent=4)
     print('\n[{}] Auf wiedersehen!\n'.format(system_name.upper()))
     sys.exit()
 
 ########################### ANFANG ###########################
-if not os.path.exists('room/LUNA_config.json'):
+if not os.path.exists('room/config.json'):
     print('\n' + color.RED + '[ERROR]' + color.END + ' Die nötigen Dateien (Ordner "room") für diesen Setup-Schritt konnten nicht gefunden werden.\n'
           'Hast du die Dateien heruntergeladen?\n'
           'Befindet sich das Setup-Skript im richtigen Ordner?')
     text = input('[ENTER drücken zum beenden]')
     sys.exit()
 
-if not os.path.exists('server/LUNA_config.json'):
+if not os.path.exists('server/config.json'):
     print('\n' + color.RED + '[ERROR]' + color.END + ' Die nötigen Dateien (Ordner "server") für diesen Setup-Schritt konnten nicht gefunden werden.\n'
           'Hast du die Dateien heruntergeladen?\n'
           'Befindet sich das Setup-Skript im richtigen Ordner?')
     text = input('[ENTER drücken zum beenden]')
     sys.exit()
 
-with open('server/LUNA_config.json', 'r') as config_file:
+with open('server/config.json', 'r') as config_file:
     server_config_data = json.load(config_file)
 system_name = server_config_data['System_name']
 
@@ -108,8 +108,8 @@ print('Willkommen zum Setup-Assistenten für deinen neuen Sprachassistenten.\n'
 time.sleep(1)
 text = input('[ENTER drücken zum fortfahren]')
 
-if server_config_data['TNetwork_Key'] == '':
-    print('\n' + color.RED + '[ERROR]' + color.END + ' Es konnte keine fertige Server-Konfiguration gefunden werden (TNetwork-Schlüssel fehlt).\n'
+if server_config_data['Network_Key'] == '':
+    print('\n' + color.RED + '[ERROR]' + color.END + ' Es konnte keine fertige Server-Konfiguration gefunden werden (Network-Schlüssel fehlt).\n'
           'Du musst zuerst deinen {}-Server konfigurieren (mit "LUNA_server_setup.py"), bevor du Räume hinzufügen kannst.'.format(system_name))
     text = input('[ENTER drücken zum beenden]')
     sys.exit()
@@ -119,22 +119,22 @@ room_name = frage_erfordert_antwort('Bitte gib einen Namen für diesen {}-Raumcl
 print('Okay, dieser {}-Raum wird {} heißen.\n'.format(system_name, room_name))
 time.sleep(1)
 
-if os.path.exists(room_name + '/LUNA_config.json'):
+if os.path.exists(room_name + '/config.json'):
     print('Es wurde eine bestehende Konfiguration für den Raum {} gefunden.'.format(room_name))
     antwort = ja_nein_frage('Soll diese Konfiguration als Standardantworten geladen werden [Ja / Nein]? [Standard ist "Ja"]: ', True)
     if antwort == True:
         print('Konfiguration wird geladen...\n')
-        with open(room_name + '/LUNA_config.json', 'r') as config_file:
+        with open(room_name + '/config.json', 'r') as config_file:
             room_config_data = json.load(config_file)
     else:
-        with open('room/LUNA_config.json', 'r') as config_file:
+        with open('room/config.json', 'r') as config_file:
             room_config_data = json.load(config_file)
 else:
-    with open('room/LUNA_config.json', 'r') as config_file:
+    with open('room/config.json', 'r') as config_file:
         room_config_data = json.load(config_file)
 
 room_config_data['Room_name'] = room_name
-room_config_data['TNetwork_Key'] = server_config_data['TNetwork_Key']
+room_config_data['Network_Key'] = server_config_data['Network_Key']
 
 print('Als nächstes musst du die lokale IP-Adresse deines {}-Servers eingeben, damit dieser Raum ihn später erreichen kann.\n'
       'Du kannst die Adresse zum Beispiel in den Netzwerkeinstellungen im Informations-Fenster zu deiner derzeitigen Verbindung unter "IPv4-Adresse" finden '
@@ -157,7 +157,7 @@ time.sleep(1)
 print('Die folgenden beiden Parameter betreffen die Erkennung des Schlüsselwortes und allgemein die Spracheingabe von {}.\n'
       'Da sich die optimalen Werte für diese Einstellungen leider von Fall zu Fall stark unterscheiden, sind die vorgeschlagenen Standardantworten nur sehr grobe Richtwerte.\n'
       'Wenn bei dir die Schlüsselworterkennung unzuverlässig oder im Gegenteil zu oft anspringt, solltest du diese Parameter auf jeden Fall noch einmal bearbeiten.\n'
-      'Du kannst sie dann entweder durch erneuten Durchlauf dieses Setup-Assistenten oder direkt in der Datei "LUNA_config.json" im Ordner des entsprechenden Raumes ändern.'.format(system_name))
+      'Du kannst sie dann entweder durch erneuten Durchlauf dieses Setup-Assistenten oder direkt in der Datei "config.json" im Ordner des entsprechenden Raumes ändern.'.format(system_name))
 time.sleep(1)
 text = input('[ENTER drücken zum fortfahren]')
 
