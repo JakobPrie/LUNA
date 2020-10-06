@@ -9,7 +9,7 @@ def end_config(config_data):
     print('Die Konfiguration deines {}-Servers ist abgeschlossen. Als nächstes solltest du mit den entsprechenden Assistenten Räume oder Nutzer einrichten.'.format(config_data['System_name']))
     enterFinalize()
     print('\nDie neuen Daten werden gespeichert...')
-    with open('server/LUNA_config.json', 'w') as config_file:
+    with open('server/config.json', 'w') as config_file:
         json.dump(config_data, config_file, indent=4)
     print('\n[{}] Auf wiedersehen!\n'.format(config_data['System_name'].upper()))
     sys.exit()
@@ -23,14 +23,14 @@ print('Willkommen zum Setup-Assistenten für deinen neuen Sprachassistenten.\n'
 time.sleep(1)
 enterContinue()
 
-if not os.path.exists('server/LUNA_config.json'):
+if not os.path.exists('server/config.json'):
     print('\n' + color.RED + '[ERROR]' + color.END + ' Die nötigen Dateien (Ordner "server") für diesen Setup-Schritt konnten nicht gefunden werden.\n'
           'Hast du die Dateien heruntergeladen?\n'
           'Befindet sich das Setup-Skript im richtigen Ordner?')
     enterFinalize()
     sys.exit()
 
-with open('server/LUNA_config.json', 'r') as config_file:
+with open('server/config.json', 'r') as config_file:
     config_data = json.load(config_file)
 
 default_name = config_data['System_name']
