@@ -533,15 +533,15 @@ def runMain(commandMap=None, feedbackMap=None):
             Luna.route_change_hotworddetection(room, changing_to)
 
         def batchGen(batch):
-             """
-             Mit der BatchGen-Funktion können Sie unscharfe Vergleichszeichenfolgen generieren
-             mit Hilfe einer einfachen Syntax:
-                 "Wann [kommt | kommt] [der | die | das] näherst [e, er, es] [Bahn | Zug]"
-             wird zu einer Liste von Sätzen zusammengestellt, von denen jeder die Wörter kombiniert
-             in den Klammern in allen verschiedenen Kombinationen.
-             Diese Liste kann dann fox Beispiel von der batchMatch-Funktion verwendet werden, um
-             spezielle Sätze erkennen.
-             """
+            """
+            Mit der BatchGen-Funktion können Sie unscharfe Vergleichszeichenfolgen generieren
+            mit Hilfe einer einfachen Syntax:
+                "Wann [kommt | kommt] [der | die | das] näherst [e, er, es] [Bahn | Zug]"
+            wird zu einer Liste von Sätzen zusammengestellt, von denen jeder die Wörter kombiniert
+            in den Klammern in allen verschiedenen Kombinationen.
+            Diese Liste kann dann fox Beispiel von der batchMatch-Funktion verwendet werden, um
+            spezielle Sätze erkennen.
+            """
             outlist = []
             ct = 0
             while len(batch) > 0:
