@@ -1,3 +1,4 @@
+from telepot import Bot
 from telepot.namedtuple import InlineKeyboardMarkup, InlineKeyboardButton
 from resources.stt import Speech_to_Text
 from resources.tts import Text_to_Speech
@@ -18,6 +19,7 @@ import os
 
 
 class TelegramInterface:
+
     def __init__(self, token, luna):
         self.token = token
         self.luna = luna # Ne Verbindung zur Hauptklasse schadet nie ;)
@@ -77,9 +79,13 @@ class TelegramInterface:
                '-acodec', 'libopus',
                converted_audio_filename]
         subprocess.call(cmd, shell=False)
-        self.bot.sendVoice(uid, open(converted_audio_filename, 'rb'))
+        self.bot.sendAudio(uid, open(converted_audio_filename, 'rb'))
         os.remove(converted_audio_filename)
         os.remove(voice_filename)
+
+    def send_file(self, file, uid):
+        document = open(file)
+        self.bot.sendDocument(uid, document)
 
     def start(self):
         def on_chat_message(msg):
