@@ -261,7 +261,7 @@ def runMain(commandMap=None, feedbackMap=None):
             # Hier ist die Lösung, die dafür sorgt, dass die Anfrage ggf. an einen bestimmten
             # Raum weitergeleitet wird... Das macht Sinn: So bleiben Direktaufrufe
             # über den Modulnamen auf jeden Fall unbehelligt und nur so können Sonderfälle wie "Erinner mich... wenn ich in der Küche bin"
-            # korrekt interpretiert werden!+
+            # korrekt interpretiert werden!
             if not analysis == {}:
                 if analysis['room'] is not None:
                     return Luna.route_query_modules(user, name, text, analysis['room'], direct=direct,
@@ -415,7 +415,7 @@ def runMain(commandMap=None, feedbackMap=None):
             self.path = Luna.path
 
         def say(self, text, room=None, user=None, output='auto'):
-            text.replace('  ', ' ')
+            text.replace('  ', ' ') # Das geht bestimmt auch schöner :/
             text = self.correct_output_automate(text)
             if text == '' or not type(text) == type('test'):
                 return
