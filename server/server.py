@@ -652,6 +652,14 @@ def runMain(commandMap=None, feedbackMap=None):
                 user = self.user
             return Luna.start_module(user, name, text, room)
 
+        def module_storage(self, module_name=None):
+            module_storage = Luna.local_storage.get("module_storage")
+            if module_name is None:
+                return module_storage
+            # ich bin jetz einfach mal so frei und faul und gehe davon aus, dass eine Modul-Name von einem Modul übergeben wird, das es auch wirklich gibt
+            else:
+                return module_storage[module_name]
+
         def sendWebSocketEvent(self, event: str, data: dict):
             Websocket.sendEvent(event, data)
 
