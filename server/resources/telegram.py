@@ -83,6 +83,9 @@ class TelegramInterface:
         os.remove(converted_audio_filename)
         os.remove(voice_filename)
 
+    def send_video(self, video, uid, supports_streaming=True):
+        self.bot.sendVideo(uid, video, supports_streaming=supports_streaming)
+
     def send_file(self, file, uid):
         document = open(file)
         self.bot.sendDocument(uid, document)

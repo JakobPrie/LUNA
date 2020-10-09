@@ -54,7 +54,7 @@ def send_video_to_telegram(luna, VIDEO_PATH):
 	print(VIDEO_PATH)
 	try:
 		uid = luna.local_storage['LUNA_telegram_name_to_id_table'][luna.user]
-		luna.telegram.bot.sendVideo(uid, video=open(VIDEO_PATH, 'rb'), supports_streaming=True)
+		luna.telegram.bot.send_file(uid, video=open(VIDEO_PATH, 'rb'), supports_streaming=True)
 	except KeyError as e:
 		Log.write('WARNING', 'Der Text "{}" konnte nicht gesendet werden, da für den Nutzer "{}" keine Telegram-ID angegeben wurde'.format(text, user), conv_id=original_command, show=True)
 		print(f"Abbruch durch Fehler: {e}")
