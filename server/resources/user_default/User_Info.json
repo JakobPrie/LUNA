@@ -11,6 +11,7 @@
       "role": "USER",
       "uid": 0,
       "telegram_id": 0,
-      "wecker_ton": "standart.wav"
+      "wecker_ton": "standart.wav",
+      "wartende_benachrichtigungen": []
   }
 }
