@@ -80,9 +80,7 @@ class Modules:
         return modules
 
 
-    def query_threaded(self, user, name, text, direct=False, origin_room=None, data=None): 
-                                                                                           
-                                                                                           
+    def query_threaded(self, user, name, text, direct=False, origin_room=None, data=None):
         if text == None:
             text = random.randint(0,1000000000)
             analysis = {}
