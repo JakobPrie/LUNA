@@ -157,12 +157,13 @@ def runMain(commandMap=None, feedbackMap=None):
                         Log.write('ACTION', '--Modul {} direkt aufgerufen (Parameter: {})--'.format(name, text),
                                   conv_id=str(text), show=True)
                         Luna.active_modules[str(text)] = self.Modulewrapper(text, analysis, user, origin_room, data)
-                        mt = Thread(target=self.run_threaded_module, args=(text, module,))
+                        mt = Thread(target=self.run_threaded_module, args=(text, module))
                         mt.daemon = True
                         mt.start()
                         if direct:
                             Luna.add_to_context(user, module.__name__, Luna.server_name, origin_room)
-                            self.important_notification(user, text, origin_room, data, must_be_secure)
+                            # Hier wird auf die important_notification verzichtet, da sonst mehrere Abfragen
+                            # bei einem Nutzeraufruf möglich ist.
                         return True
 
                 for module in self.user_modules[user]:
@@ -178,7 +179,9 @@ def runMain(commandMap=None, feedbackMap=None):
                         mt.start()
                         if direct:
                             Luna.add_to_context(user, module.__name__, Luna.server_name, origin_room)
-                            self.important_notification(user, text, origin_room, data, must_be_secure)
+                            while mt.is_alive():
+                                time.sleep(0.3)
+                            self.important_notification(user, text, analysis, origin_room, data, must_be_secure)
                         return True
 
             # Kein Direktaufruf? Ganz normal die Module durchgehen...
@@ -196,7 +199,9 @@ def runMain(commandMap=None, feedbackMap=None):
                             mt.start()
                             if direct:
                                 Luna.add_to_context(user, module.__name__, Luna.server_name, origin_room)
-                                self.important_notification(user, text, origin_room, data, must_be_secure)
+                                while mt.is_alive():
+                                    time.sleep(0.3)
+                                self.important_notification(user, text, analysis, origin_room, data, must_be_secure)
                             return True
                     except:
                         continue
@@ -213,7 +218,9 @@ def runMain(commandMap=None, feedbackMap=None):
                         mt.start()
                         if direct:
                             Luna.add_to_context(user, module.__name__, Luna.server_name, origin_room)
-                            self.important_notification(user, text, origin_room, data, must_be_secure)
+                            while mt.is_alive():
+                                time.sleep(0.3)
+                            self.important_notification(user, text, analysis, origin_room, data, must_be_secure)
                         return True
                 except:
                     traceback.print_exc()
@@ -238,7 +245,9 @@ def runMain(commandMap=None, feedbackMap=None):
                                     mt.start()
                                     if direct:
                                         Luna.add_to_context(user, module.__name__, Luna.server_name, origin_room)
-                                        self.important_notification(user, text, origin_room, data, must_be_secure)
+                                        while mt.is_alive():
+                                            time.sleep(0.3)
+                                        self.important_notification(user, text, analysis, origin_room, data, must_be_secure)
                                     return True
                             except:
                                 continue
@@ -254,7 +263,9 @@ def runMain(commandMap=None, feedbackMap=None):
                                 mt.start()
                                 if direct:
                                     Luna.add_to_context(user, module.__name__, Luna.server_name, origin_room)
-                                    self.important_notification(user, text, origin_room, data, must_be_secure)
+                                    while mt.is_alive():
+                                        time.sleep(0.3)
+                                    self.important_notification(user, text, analysis, origin_room, data, must_be_secure)
                                 return True
                         except:
                             traceback.print_exc()
@@ -274,7 +285,7 @@ def runMain(commandMap=None, feedbackMap=None):
 
             return False
 
-        def important_notification(self, user, text, origin_room=None, data=None,
+        def important_notification(self, user, text, analysis, origin_room=None, data=None,
                            must_be_secure=False):
             # Nur wenn is sich um einen Sprachaufruf handelt, sollen die Infos gesagt werden, da
             # sonst nicht sicher ist, ob die Informationen auch wirklich den Nutzer erreichen.
@@ -293,7 +304,7 @@ def runMain(commandMap=None, feedbackMap=None):
                         # Außerdem kann es bei mehereren luna.says dazu kommen, dass während einer wichtigen Nachricht
                         # der eigentliche Aufruf dazwischenfunkt, da Threads ja paralell zueinander ablaufen
                         Luna.active_modules[str(text)] = self.Modulewrapper(text, analysis, user, origin_room, data)
-                        self.run_threaded_module(text, module, )
+                        self.run_threaded_module(text, module)
 
         def run_threaded_module(self, text, module):
             try:
