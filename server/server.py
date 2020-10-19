@@ -1,7 +1,6 @@
 from Network import Network_Connection_Server
 from analyze import Sentence_Analyzer
 from threading import Thread
-import traceback
 import random
 import pkgutil
 import socket
@@ -163,8 +162,9 @@ def runMain(commandMap=None, feedbackMap=None):
                         mt.start()
                         if direct:
                             Luna.add_to_context(user, module.__name__, Luna.server_name, origin_room)
-
+                            self.important_notification(user, text, origin_room, data, must_be_secure)
                         return True
+
                 for module in self.user_modules[user]:
                     if module.__name__ == name and (
                             (not must_be_secure) or (hasattr(module, 'SECURE') and getattr(module, 'SECURE'))):
@@ -178,6 +178,7 @@ def runMain(commandMap=None, feedbackMap=None):
                         mt.start()
                         if direct:
                             Luna.add_to_context(user, module.__name__, Luna.server_name, origin_room)
+                            self.important_notification(user, text, origin_room, data, must_be_secure)
                         return True
 
             # Kein Direktaufruf? Ganz normal die Module durchgehen...
@@ -195,6 +196,7 @@ def runMain(commandMap=None, feedbackMap=None):
                             mt.start()
                             if direct:
                                 Luna.add_to_context(user, module.__name__, Luna.server_name, origin_room)
+                                self.important_notification(user, text, origin_room, data, must_be_secure)
                             return True
                     except:
                         continue
@@ -211,6 +213,7 @@ def runMain(commandMap=None, feedbackMap=None):
                         mt.start()
                         if direct:
                             Luna.add_to_context(user, module.__name__, Luna.server_name, origin_room)
+                            self.important_notification(user, text, origin_room, data, must_be_secure)
                         return True
                 except:
                     traceback.print_exc()
@@ -235,6 +238,7 @@ def runMain(commandMap=None, feedbackMap=None):
                                     mt.start()
                                     if direct:
                                         Luna.add_to_context(user, module.__name__, Luna.server_name, origin_room)
+                                        self.important_notification(user, text, origin_room, data, must_be_secure)
                                     return True
                             except:
                                 continue
@@ -250,6 +254,7 @@ def runMain(commandMap=None, feedbackMap=None):
                                 mt.start()
                                 if direct:
                                     Luna.add_to_context(user, module.__name__, Luna.server_name, origin_room)
+                                    self.important_notification(user, text, origin_room, data, must_be_secure)
                                 return True
                         except:
                             traceback.print_exc()
@@ -261,13 +266,34 @@ def runMain(commandMap=None, feedbackMap=None):
             # Hier ist die Lösung, die dafür sorgt, dass die Anfrage ggf. an einen bestimmten
             # Raum weitergeleitet wird... Das macht Sinn: So bleiben Direktaufrufe
             # über den Modulnamen auf jeden Fall unbehelligt und nur so können Sonderfälle wie "Erinner mich... wenn ich in der Küche bin"
-            # korrekt interpretiert werden!+
+            # korrekt interpretiert werden!
             if not analysis == {}:
                 if analysis['room'] is not None:
                     return Luna.route_query_modules(user, name, text, analysis['room'], direct=direct,
                                                     origin_room=origin_room, data=data)
 
             return False
+
+        def important_notification(self, user, text, origin_room=None, data=None,
+                           must_be_secure=False):
+            # Nur wenn is sich um einen Sprachaufruf handelt, sollen die Infos gesagt werden, da
+            # sonst nicht sicher ist, ob die Informationen auch wirklich den Nutzer erreichen.
+            # Das fragen wir schon oben ab, daher wäre das hier nur redundant
+            if text != "TIMEOUT_OR_INVALID":
+                # der and text != ... Teil sorgt dafür, dass bei einem zwar erkannten aber nicht
+                # gesagten Hotword die Info nicht gesagt wird, da der Nutzer LUNA ja auch nicht
+                # aufgerufen hat.
+                temp_name = "wartende_benachrichtigung"
+                # Modul finden und aufrufen, welches sich um das Ausgeben der "wartenden Benachrichtigungen" kümmert
+                for module in self.common_modules:
+                    if module.__name__ == temp_name and (
+                            (not must_be_secure) or (hasattr(module, 'SECURE') and getattr(module, 'SECURE'))):
+                        # An dieser Stelle wird ganz bewusst auf einen neuen Thread verzichtet, da zunächst die wichtigen
+                        # Infos gesagt werden sollen, bevor das eigentliche Modul zu Wort kommt.
+                        # Außerdem kann es bei mehereren luna.says dazu kommen, dass während einer wichtigen Nachricht
+                        # der eigentliche Aufruf dazwischenfunkt, da Threads ja paralell zueinander ablaufen
+                        Luna.active_modules[str(text)] = self.Modulewrapper(text, analysis, user, origin_room, data)
+                        self.run_threaded_module(text, module, )
 
         def run_threaded_module(self, text, module):
             try:
@@ -415,7 +441,7 @@ def runMain(commandMap=None, feedbackMap=None):
             self.path = Luna.path
 
         def say(self, text, room=None, user=None, output='auto'):
-            text.replace('  ', ' ')
+            text = text.replace('  ', ' ')  # Das geht bestimmt auch schöner :/
             text = self.correct_output_automate(text)
             if text == '' or not type(text) == type('test'):
                 return
@@ -532,7 +558,7 @@ def runMain(commandMap=None, feedbackMap=None):
                 room = self.room
             Luna.route_change_hotworddetection(room, changing_to)
 
-        def batchGen(batch):
+        def batchGen(self, batch):
             """
             Mit der BatchGen-Funktion können Sie unscharfe Vergleichszeichenfolgen generieren
             mit Hilfe einer einfachen Syntax:
@@ -558,16 +584,16 @@ def runMain(commandMap=None, feedbackMap=None):
                         batch.append(rebuild)
             return outlist
 
-        def batchMatch(batch, match):
+        def batchMatch(self, batch, match):
             t = False
             if isinstance(batch, str):
                 batch = [batch]
-            for piece in batchGen(batch):
+            for piece in self.batchGen(batch):
                 if piece.lower() in match.lower():
                     t = True
             return t
 
-        def speechVariation(input):
+        def speechVariation(self, input):
             """
             Diese Funktion ist das Gegenstück zur BatchGen-Funktion. Es kompiliert das gleiche
             Satzformat wie dort angegeben, aber es wird nur eine zufällige Variante und direkt ausgewählt
@@ -703,6 +729,7 @@ def runMain(commandMap=None, feedbackMap=None):
             Local_storage['LUNA_telegram_id_to_name_table'] = telegram_id_to_name_table
 
     class LUNA:
+
         def __init__(self):
             self.Modules = Modules
             self.Users = Users
@@ -1052,7 +1079,7 @@ def runMain(commandMap=None, feedbackMap=None):
 
         def route_change_hotworddetection(self, original_command, room, changing_to):
             for name, room in self.rooms.items():
-                if name.lower() == raum.lower():
+                if name.lower() == room.lower():
                     # Dem Raum den Auftrag erteilen, es zu sagen
                     room.change_hotworddetection(changing_to, room, send=True)
                     # Warten, bis der Raum bestätigt, es gemacht zu haben
@@ -1145,8 +1172,8 @@ def runMain(commandMap=None, feedbackMap=None):
                         if new_room is not None and new_name is not None:
                             return new_room, new_name
                     else:
-                        Log.write('ERROR', '[Einfach dem Jakob schicken, der weiß (ungefähr), wo das Problem ist]\n'
-                                           'Tipp: Es hat was damit zu tun, dass add_to_context eben nur "ZIEMLICH SICHER" einen origin_room erhält...',
+                        Log.write('ERROR',
+                                  'Es hat was damit zu tun, dass add_to_context eben nur "ZIEMLICH SICHER" einen origin_room erhält...',
                                   conv_id=text, show=True)
             return room, name
 
@@ -1209,7 +1236,8 @@ def runMain(commandMap=None, feedbackMap=None):
                         spaces = ''
                 else:
                     if not last_logentry['conv_id'] == logentry[
-                        'conv_id']:  # conversation_id wird am Anfang original_command sein, aber in weiser Voraussicht hab ich das schon mal umbenannt...
+                        'conv_id']:  # conversation_id wird am Anfang original_command sein, aber in weiser
+                        # Voraussicht hab ich das schon mal umbenannt...
                         spaces = '\n'
                     if last_logentry['conv_id'] == 'HW_DETECTED':
                         spaces = ''
@@ -1528,113 +1556,6 @@ def runMain(commandMap=None, feedbackMap=None):
                     continue
             Log.write('WARNING', 'Verbindung mit Raum {} unterbrochen'.format(self.name), show=True)
 
-    class Windows_Pc:
-        def __init__(self, clientconnection, addr):
-            self.addr = addr
-            self.Clientconnection = clientconnection
-
-            self.pc_name = ''
-            self.users = []
-
-            self.room_guessed_user = ''
-            self.server_guessed_user = ''
-
-            self.distribute_dict = {}  # Cache für send_update_information
-
-            rt = Thread(target=self.start_connection)
-            rt.daemon = True
-            rt.start()
-
-        def handle_online_requests(self):
-            say_requests = []
-
-            while True:
-                # SAY
-                # Neue Aufträge einholen
-                new_say_requests = self.Clientconnection.readanddelete('LUNA_server_say')
-                if new_say_requests is not None:
-                    for request in new_say_requests:
-                        for existing_request in say_requests:
-                            if request['original_command'] == existing_request['original_command']:
-                                break
-                        else:
-                            say_requests.append(request)
-                # Aufträge bearbeiten
-                for request in say_requests:
-                    rst = Thread(target=self.thread_say, args=(request,))
-                    rst.daemon = True
-                    rst.start()
-                    say_requests.remove(request)
-
-                time.sleep(0.03)
-
-        def send_update_information(self):
-            # Verteilt die in keys_to_distribute festgelegten Daten aus dem Local_storage an die Räume
-            information_dict = {}
-            for key in Luna.local_storage['keys_to_distribute']:
-                if not key in Luna.local_storage.keys():
-                    Log.write('WARNING',
-                              'Der Schlüssel {} ist in local_storage nicht vorhanden und kann daher nicht an die Räume verteilt werden!'.format(
-                                  key), show=True)
-                    Luna.local_storage['keys_to_distribute'].remove(key)
-                    continue
-                information_dict[key] = Luna.local_storage[key]
-            self.Clientconnection.send({'LUNA_server_info': information_dict})
-
-        def recvall(self, sock, count):
-            buf = b''
-            while count:
-                newbuf = sock.recv(count)
-                if not newbuf: return None
-                buf += newbuf
-                count -= len(newbuf)
-            return buf
-
-        def start_connection(self):
-            # Informationen über den Raum empfangen...
-            time.sleep(0.5)
-            while True:
-                information_dict = self.Clientconnection.readanddelete('LUNA_Pc_info')
-                if information_dict is not None:
-                    self.pc_name = information_dict['name']
-                    self.user = information_dict['user']
-                    if self.user not in Luna.local_storage['users']:
-                        self.Clientconnection.send({"valid_user": False})
-                        new_username = self.Clientconnection.readanddelete("new_username")
-                        if new_username in Luna.local_storage['users']:
-                            self.Clientconnection.send({"valid_new_user": True})
-                        else:
-                            self.Clientconnection.send({"valid_new_use": False})
-                    else:
-                        self.Clientconnection.send({"valid_user": True})
-
-                    Windows_Pcs[self.name] = Devices_connecting[self.addr]
-                    del Devices_connecting[self.addr]
-                    Pc_list.append(self.name)
-                    Luna.local_storage['pcs'][self.name] = {'name': self.name, 'owner': []}
-                    Luna.Analyzer.room_list = Room_list
-                    break
-                time.sleep(0.01)
-
-            # ...und Informationen an den Raum senden.
-            self.send_update_information()
-            Log.write('INFO', 'Verbindung mit PC {} hergestellt'.format(self.pc_name), show=True)
-
-            # Alles geklärt, jetzt zur eigentlichen Aufgabe dieser Klasse...
-            self.handle_online_requests()
-
-            # PC ist offline? Aufräumen!
-            Windows_pcs.remove(self.pc_name)
-            del pcs[self.pc_name]
-            del Luna.local_storage['pcs'][self.pc_name]
-            for user in Local_storage['users'].values():
-                try:
-                    if user['pc'] == self.pc_name:
-                        del user['pc']
-                except KeyError:
-                    continue
-            Log.write('WARNING', 'Verbindung mit dem PC {} unterbrochen'.format(self.pc_name), show=True)
-
     class Network_Device:
         def __init__(self, conn, addr):
             self.conn = conn
@@ -1699,7 +1620,7 @@ def runMain(commandMap=None, feedbackMap=None):
             time.sleep(0.25)
             # TODO: check command-mmap and execute corresponding commands
 
-    #################################################-MAIN-################################################
+    ################################################-MAIN-################################################
     java_start = False
     if len(sys.argv) > 1:
         java_start = True
@@ -1731,11 +1652,9 @@ def runMain(commandMap=None, feedbackMap=None):
 
     Devices_connecting = {}
     Rooms = {}
-    Windows_Pcs = {}
     Other_devices = {}
 
     Room_list = []
-    Pc_list = []
 
     Users = Users()
     Modules = Modules()
@@ -1787,7 +1706,7 @@ def runMain(commandMap=None, feedbackMap=None):
     Log.write('DEBUG', 'Server Port: {}'.format(port), show=False)
 
     sock.listen(True)
-    time.sleep(1.5)
+    time.sleep(1)
 
     if (java_start):
         juna.setSignalHandlers()
