@@ -493,7 +493,7 @@ def runMain(commandMap=None, feedbackMap=None):
                     output = 'telegram'
 
             chunk = 4096
-            frame_rate = audiofile.getframerate() * 2
+            frame_rate = audiofile.getframerate() #* 2
             channels = audiofile.getnchannels()
 
             format = {'format': 8,
