@@ -179,8 +179,7 @@ def runMain(commandMap=None, feedbackMap=None):
                         mt.start()
                         if direct:
                             Luna.add_to_context(user, module.__name__, Luna.server_name, origin_room)
-                            while mt.is_alive():
-                                time.sleep(0.3)
+                            mt.join()
                             self.important_notification(user, text, analysis, origin_room, data, must_be_secure)
                         return True
 
@@ -199,8 +198,7 @@ def runMain(commandMap=None, feedbackMap=None):
                             mt.start()
                             if direct:
                                 Luna.add_to_context(user, module.__name__, Luna.server_name, origin_room)
-                                while mt.is_alive():
-                                    time.sleep(0.3)
+                                mt.join()
                                 self.important_notification(user, text, analysis, origin_room, data, must_be_secure)
                             return True
                     except:
@@ -218,8 +216,7 @@ def runMain(commandMap=None, feedbackMap=None):
                         mt.start()
                         if direct:
                             Luna.add_to_context(user, module.__name__, Luna.server_name, origin_room)
-                            while mt.is_alive():
-                                time.sleep(0.3)
+                            mt.join()
                             self.important_notification(user, text, analysis, origin_room, data, must_be_secure)
                         return True
                 except:
@@ -245,8 +242,7 @@ def runMain(commandMap=None, feedbackMap=None):
                                     mt.start()
                                     if direct:
                                         Luna.add_to_context(user, module.__name__, Luna.server_name, origin_room)
-                                        while mt.is_alive():
-                                            time.sleep(0.3)
+                                        mt.join()
                                         self.important_notification(user, text, analysis, origin_room, data, must_be_secure)
                                     return True
                             except:
@@ -263,8 +259,7 @@ def runMain(commandMap=None, feedbackMap=None):
                                 mt.start()
                                 if direct:
                                     Luna.add_to_context(user, module.__name__, Luna.server_name, origin_room)
-                                    while mt.is_alive():
-                                        time.sleep(0.3)
+                                    mt.join()
                                     self.important_notification(user, text, analysis, origin_room, data, must_be_secure)
                                 return True
                         except:
