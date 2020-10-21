@@ -32,21 +32,15 @@ class skills:
         start_word = start_word.lower()
         text = text.replace(".", "")
         text = text.split(' ')
-        print(start_word)
-        print("-----------")
         for i in range(len(text)):
-            print(text[i])
+            # Erst hier .lower und Groß- und Kleinschreibung beizubehalten
             if text[i].lower() == start_word:
-                print("gefundend!!!")
                 index = i + 1
 
-        print(index)
         if index is not -1:
             if end_word == '':
-                while index < len(text):
-                    print(ausgabe)
-                    ausgabe.append(text[index])
-                    index += 1
+                for i in range(index, len(text)):
+                    ausgabe.append(text[i])
             else:
                 founded = False
                 while index <= len(text) and not founded:
@@ -64,8 +58,7 @@ class skills:
             return ausgabe_neu
 
     def delete_duplications(self, array):
-        new_array = list(set(array))
-        return new_array
+        return list(set(array))
 
     """
     def assamble_new_items(array, new_items):
