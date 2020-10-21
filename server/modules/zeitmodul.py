@@ -38,9 +38,9 @@ def handle(text, luna, profile):
     elif 'hallo' in text:
         luna.say('Hallo, {}!'.format(luna.user))
     elif 'guten' in text and 'tag' in text:
-        if time >= 20 and time <= 4:
+        if time >= 20 or time <= 4:
             luna.say('Naja "Tag" würde ich das nicht mehr nennen, aber ich wünsche dir auch einen guten Abend')
-        elif time >= 5 and time <= 20:
+        elif 5 <= time <= 20:
             luna.say('Guten Tag, {}'.format(luna.user))
     elif 'guten' in text and 'morgen' in text:
         if time is 4 or time is 5:
@@ -50,31 +50,31 @@ def handle(text, luna, profile):
                 luna.say('Dann wünsche ich dir dabei viel Erfolg!')
             else:
                 luna.say('Dann schlaf ruhig weiter, es ist noch viel zu früh, um aufzustehen.')
-        elif time >= 6 and time <= 10:
+        elif 6 <= time <= 10:
             luna.say('Guten Morgen, {}'.format(luna.user))
         elif time is 11 or time is 12:
             luna.say('Wurde aber auch langsam Zeit, {}. Aber dennoch auch dir einen guten Morgen.'.format(luna.user))
-        elif time >= 14 and time <= 18:
+        elif 14 <= time <= 18:
             luna.say(
                 'Ob es noch Morgen ist, liegt wohl im Blickwinkel des Betrachters. Ich würde eher sagen, dass es Mittag oder Nachmittag ist.')
-        elif time >= 19 and time <= 3:
+        elif time >= 19 or time <= 3:
             luna.say(
                 'Also Morgen ist es auf jeden Fall nicht mehr. Daher wünsche ich dir einfach Mal einen guten Abend.')
         else:
             luna.say('Hallo, {}'.format(luna.user))
     elif 'guten' in text and 'abend' in text:
-        if time >= 6 and time <= 17:
+        if 6 <= time <= 17:
             luna.say(
                 'Ob es noch Abend ist, liegt wohl im Blickwinkel des Betrachters. In Amerika ist es jetzt in der Tat Abend.')
-        elif time >= 18 and time <= 5:
+        elif time >= 18 or time <= 5:
             luna.say('Gute nacht, {}'.format(luna.user))
         else:
             luna.say('Guten Abend, {}'.format(luna.user))
 
     elif 'gute' in text and 'nacht' in text:
-        if time >= 1 and time <= 13:
+        if 1 <= time <= 13:
             luna.say('Du solltest echt langsam ins Bett gehen.')
-        elif time >= 8 and time <= 24 or time is 0:
+        elif (8 <= time <= 24) or time is 0:
             luna.say('Gute Nacht, {}.'.format(luna.user))
         else:
             luna.say('Eine sehr interessante Definition der derzeitigen Uhrzeit.')
