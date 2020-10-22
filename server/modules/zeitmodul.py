@@ -108,8 +108,7 @@ def handle(text, luna, profile):
 
 
 def timer(text, luna):
-
-    if 'start' in text or 'stopp' in text or 'beende' in text:
+    if 'start' in text:
         luna.say('Sicher, dass du nicht die Stoppuhr meinst?')
         luna.say('Soll ich für dich eine Stoppuhr starten?')
         response = luna.listen()
@@ -126,7 +125,6 @@ def timer(text, luna):
     elif 'stell' in text or 'beginn' in text:
         # Einheitlichkeit
         text = text.replace(' auf ', ' in ')
-
 
         time = luna.Analyzer.analyze(text)['datetime']
         if luna.room.lower() == 'küche':
@@ -156,10 +154,15 @@ def timer(text, luna):
             for item in luna.local_storage['Timer']:
                 if luna.user == item["Benutzer"]:
                     user_timer.append(item)
-
-        if len(user_timer) > 1:
-            luna.say('Du hast ' + str(len(luna.local_storage['Timer'])) + ' Timer gestellt. ')
+        aussage_timer = ''
         for item in user_timer:
+            #erst einmal checken, ob der Timer vlt eigentlich schon abgelaufen ist, was eigentlich nicht passieren sollte.
+            now = datetime.datetime.now()
+            timer_abgelaufen = (now - item["Zeit"])
+            if timer_abgelaufen:
+                user_timer.remove(item)
+                luna.local_storage["Timer"].remove(item)
+
             # Verbleibende Zeit runden
             genaue_zeit = item['Zeit'] - datetime.datetime.now()
 
@@ -170,44 +173,43 @@ def timer(text, luna):
             if tage == 0 and sekunden<3:
                 continue
 
-            jahre = 0
-            stunden = 0
-            minuten = 0
+            sekunden = genaue_zeit.seconds
 
-            if tage >= 365:
-                jahre = int(tage / 365)
-                tage = tage % 365
-            if sekunden >= 3600:
-                stunden = int(sekunden / 3600)
-                sekunden = sekunden % 3600
-            if sekunden >= 60:
-                minuten = int(sekunden / 60)
-                sekunden = sekunden % 60
+            if (sekunden % 60) >= 30:
+                sekunden += 60 - (sekunden % 60)
             if sekunden > 30:
-                minuten += 1
-                sekunden = 0
+                sekunden += 60 - (sekunden % 60)
 
-            verbleibende_zeit = datetime.datetime(year=jahre, month=0, day=tage, hour=stunden, minute=minuten, second=sekunden)
+            verbleibende_zeit = datetime.timedelta()
 
-            antwort = 'Du hast einen ' + item['Dauer'] + ' mit noch etwa ' + get_time_differenz(verbleibende_zeit) + ' verbleibend. '
+            aussage_timer += 'Du hast einen ' + item['Dauer'] + ' mit noch etwa ' + get_time_differenz(verbleibende_zeit) + ' verbleibend.\n'
             luna.say(antwort)
 
-    elif 'lösch' in text:
+        if len(user_timer) > 1:
+            aussage = 'Du hast ' + str(len(luna.local_storage['Timer'])) + ' Timer gestellt.\n' + aussage_timer
+
+        luna.say(aussage)
+
+
+    elif 'lösch' in text or 'beend' in text or 'stopp' in text:
         user_timer = []
         if 'Timer' in luna.local_storage.keys():
             for item in luna.local_storage['Timer']:
                 if luna.user == item["Benutzer"]:
                     user_timer.append(item)
 
-            if 'von' in text:
+            if 'alle' in text:
+                for item in user_timer:
+                    luna.local_storage['Timer'].remove(item)
+                    luna.say("Alle Timer von dir gelöscht!")
+
+            elif 'von' in text:
                 duration = skills.get_text_beetween('von', text, output='String')
                 for item in user_timer:
                     if item["Dauer"] == duration:
                         timer = luna.local_storage["Timer"].remove(item)
                         luna.local_storage["Timer"] = timer
-                        luna.say(luna.correct_output(
-                            ["Alles klar, ich habe den Teimer mit der Dauer " + item["Dauer"] + " gelöscht."],
-                            ["Alles klar, ich habe den Timer mit der Dauer " + item["Dauer"] + " gelöscht."]))
+                        luna.say("Alles klar, ich habe den Timer mit der Dauer " + item["Dauer"] + " gelöscht.")
                         break
             else:
                 if luna.telegram_call:
@@ -233,9 +235,7 @@ def timer(text, luna):
                         if "ja" in response:
                             timer = luna.local_storage["Timer"].remove(item)
                             luna.local_storage["Timer"] = timer
-                            luna.say(luna.correct_output(
-                                ["Alles klar, ich habe den Teimer mit der Dauer " + item["Dauer"] + " gelöscht."],
-                                ["Alles klar, ich habe den Timer mit der Dauer " + item["Dauer"] + " gelöscht."]))
+                            luna.say(luna.correct_output("Alles klar, ich habe den Timer mit der Dauer " + item["Dauer"] + " gelöscht."))
                             break
 
         else:
@@ -335,8 +335,10 @@ def countdown(text, luna):
 
 def get_time_differenz(start_time, time=datetime.datetime.now()):
     aussage = []
-
-    dz = start_time - time
+    if time == None:
+        dz = start_time
+    else:
+        dz = start_time - time
     days = dz.days
     seconds = dz.seconds
     microseconds = dz.microseconds

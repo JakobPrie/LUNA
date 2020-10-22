@@ -266,7 +266,7 @@ class LUNA:
 
         audiofile = wave.open(DETECT_DONG, 'rb')
         chunk = 1024
-        frame_rate = audiofile.getframerate() * 2
+        frame_rate = audiofile.getframerate()
         
         format = {'format': 8,
                   'channels': 1,
