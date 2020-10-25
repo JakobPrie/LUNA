@@ -1,4 +1,5 @@
-# LUNA
+![LUNA logo](/images/LUNA.jpg)
+
 LUNA is a python project design to run on the Raspberry Pi Hardware (at best gen 2 or newer). LUNA acts as a voice asisstance such as Alexa or Siri. 
 With LUNA you can check the weather, create a shopping list, control smart devices in your home or listen to some music. LUNA makes it possible - while also beeing free!
 
