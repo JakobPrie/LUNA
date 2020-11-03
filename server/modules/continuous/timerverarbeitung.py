@@ -12,8 +12,11 @@ def run(luna, profile):
             zeit = item['Zeit']
             ausgabe = output
             differenz = zeit - now
-            dic = {'Text': ausgabe, 'Benutzer': benutzer}
+            dic = {'Text': ausgabe, 'Benutzer': benutzer, 'Dauer': item['Dauer']}
             if differenz.total_seconds() <= 0:
                 luna.start_module(user=benutzer, name='timerausgabe', text=dic)
                 timer.remove(item)
-                luna.local_storage['Timer'] = erinnerungen
+                luna.local_storage['Timer'] = timer
+
+
+#hat geklappt

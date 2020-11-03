@@ -155,38 +155,41 @@ def timer(text, luna):
                 if luna.user == item["Benutzer"]:
                     user_timer.append(item)
         aussage_timer = ''
-        for item in user_timer:
-            #erst einmal checken, ob der Timer vlt eigentlich schon abgelaufen ist, was eigentlich nicht passieren sollte.
-            now = datetime.datetime.now()
-            timer_abgelaufen = (now - item["Zeit"])
-            if timer_abgelaufen:
-                user_timer.remove(item)
-                luna.local_storage["Timer"].remove(item)
+        if len(user_timer) == 0:
+            aussage = "Du hast keinen aktiven Timer!"
+        else:
+            for item in user_timer:
+                #erst einmal checken, ob der Timer vlt eigentlich schon abgelaufen ist, was eigentlich nicht passieren sollte.
+                now = datetime.datetime.now()
+                timer_abgelaufen = (now - item["Zeit"])
+                if timer_abgelaufen:
+                    user_timer.remove(item)
+                    luna.local_storage["Timer"].remove(item)
 
-            # Verbleibende Zeit runden
-            genaue_zeit = item['Zeit'] - datetime.datetime.now()
+                # Verbleibende Zeit runden
+                genaue_zeit = item['Zeit'] - datetime.datetime.now()
 
-            tage = genaue_zeit.days
-            sekunden = genaue_zeit.seconds
+                tage = genaue_zeit.days
+                sekunden = genaue_zeit.seconds
 
-            # Wenn Timer kurz vor Ende, dann überspringen
-            if tage == 0 and sekunden<3:
-                continue
+                # Wenn Timer kurz vor Ende, dann überspringen
+                if tage == 0 and sekunden<3:
+                    continue
 
-            sekunden = genaue_zeit.seconds
+                sekunden = genaue_zeit.seconds
 
-            if (sekunden % 60) >= 30:
-                sekunden += 60 - (sekunden % 60)
-            if sekunden > 30:
-                sekunden += 60 - (sekunden % 60)
+                if (sekunden % 60) >= 30:
+                    sekunden += 60 - (sekunden % 60)
+                if sekunden > 30:
+                    sekunden += 60 - (sekunden % 60)
 
-            verbleibende_zeit = datetime.timedelta()
+                verbleibende_zeit = datetime.timedelta()
 
-            aussage_timer += 'Du hast einen ' + item['Dauer'] + ' mit noch etwa ' + get_time_differenz(verbleibende_zeit) + ' verbleibend.\n'
-            luna.say(antwort)
+                aussage_timer += 'Du hast einen ' + item['Dauer'] + ' mit noch etwa ' + get_time_differenz(verbleibende_zeit) + ' verbleibend.\n'
+                luna.say(antwort)
 
-        if len(user_timer) > 1:
-            aussage = 'Du hast ' + str(len(luna.local_storage['Timer'])) + ' Timer gestellt.\n' + aussage_timer
+            if len(user_timer) > 1:
+                aussage = 'Du hast ' + str(len(luna.local_storage['Timer'])) + ' Timer gestellt.\n' + aussage_timer
 
         luna.say(aussage)
 
