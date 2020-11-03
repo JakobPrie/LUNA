@@ -6,7 +6,6 @@ def isValid(text):
 
 
 def handle(text, luna, profile):
-    print("wartende benachrichtigungen")
     infos = luna.local_storage["users"][luna.user]["wartende_benachrichtigungen"]
     if len(infos) >= 1:
         if len(infos) > 1:
