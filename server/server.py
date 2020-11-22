@@ -644,6 +644,7 @@ def runMain(commandMap=None, feedbackMap=None):
             else:
                 text = text.replace('Tiffany', 'Tiffanie')
                 text = text.replace('Timer', 'Teimer')
+                text = text.replace('\n', ' ')
             return text
 
     class Modulewrapper_continuous:

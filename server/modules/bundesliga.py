@@ -145,7 +145,7 @@ def ligaResult(rangRaw, liga, verein, hasTriedLastYear=False):
         try:
             team = js[rang]
             teamRang = ((rang + len(js)) % len(js)) + 1
-        except IndexError or KeyError:
+        except (IndexError, KeyError):
             return 'So viele Vereine spielen nicht in dieser Liga.'
     elif verein is not None:
         hadExc = False
@@ -154,7 +154,7 @@ def ligaResult(rangRaw, liga, verein, hasTriedLastYear=False):
                 if js[t]['TeamName'].lower() in verein.lower() or ('ShortName' in js[t] and js[t]['ShortName'] is not None and js[t]['ShortName'].lower() in verein.lower()):
                     team = js[t]
                     teamRang = t + 1
-            except IndexError or KeyError:
+            except (IndexError, KeyError):
                 hadExc = True
         if team is None:
             if (hadExc):
@@ -170,7 +170,7 @@ def ligaResult(rangRaw, liga, verein, hasTriedLastYear=False):
             return team['TeamName'] + ' ist mit ' + str(team['Points']) + ' Punkten auf Platz ' + str(teamRang) + ' . '\
                    + shortName + ' konnte ' + str(team['Won']) + ' Siege erzielen und musste ' + str(team['Lost'])\
                    + ' Niederlagen einstecken.'
-        except IndexError or KeyError:
+        except (IndexError, KeyError):
             return None
     else:
         return None
