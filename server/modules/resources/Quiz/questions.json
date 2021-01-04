@@ -1,0 +1,86 @@
+{
+    "allgemeinwissen": {
+        "1":{
+            "erste_ausgabe": "Frage",
+            "Frage": "Wie heisst das bekannteste Rentier des US-amerikanischen Weihnachtsmanns?",
+            "Audio": "",
+            "Antwortmoeglichkeiten": ["Lois", "Peter Pan", "James", "Rudolph"],
+            "Antwort": "Rudolph"
+        },
+        "2":{
+            "erste_ausgabe": "Frage",
+            "Frage": "Welche Farbe haben ursprünglich die Taxi-Modelle in Grossbritannien?",
+            "Audio": "",
+            "Antwortmoeglichkeiten": ["Pink", "Grau", "Blau", "Schwarz"],
+            "Antwort": "Schwarz"
+        },
+        "3":{
+            "erste_ausgabe": "Frage",
+            "Frage": "Wer traf bei der Schlacht im Teutoburger Wald aufeinander? ",
+            "Audio": "",
+            "Antwortmoeglichkeiten": ["Perser und Griechen ", "Römer und Germanen", "Ägypter und Phönizier", "Cowboys und Indianer"],
+            "Antwort": "Römer und Germanen "
+        },
+        "4": {
+            "erste_ausgabe": "Frage",
+            "Frage": "Produzent von 16 James-Bond-Filmen war Albert ...? ",
+            "Audio": "",
+            "Antwortmoeglichkeiten": ["Porree", "Spargel", "Rosenkohl", "Broccoli"],
+            "Antwort": "Broccoli"
+        },
+        "5": {
+            "erste_ausgabe": "Frage",
+            "Frage": "Was ist eine Paella?",
+            "Audio": "",
+            "Antwortmoeglichkeiten": ["Russische Nudeln", "Italienischer Nudelauflauf", "Spanisches Reisgericht", "Türkisches Fladenbrot"],
+            "Antwort": "Spanisches Reisgericht"
+        },
+        "6": {
+            "erste_ausgabe": "",
+            "Frage": "",
+            "Audio": "",
+            "Antwortmoeglichkeiten": [],
+            "Antwort": ""
+        },
+        "7": {
+            "erste_ausgabe": "",
+            "Frage": "",
+            "Audio": "",
+            "Antwortmoeglichkeiten": [],
+            "Antwort": ""
+        },
+        "8": {
+            "erste_ausgabe": "",
+            "Frage": "",
+            "Audio": "",
+            "Antwortmoeglichkeiten": [],
+            "Antwort": ""
+        },
+        "9": {
+            "erste_ausgabe": "",
+            "Frage": "",
+            "Audio": "",
+            "Antwortmoeglichkeiten": [],
+            "Antwort": ""
+        }
+    },
+    "geographie":{
+        "1":{
+            "erste_ausgabe": "",
+            "Frage": "",
+            "Audio": "",
+            "Antwortmoeglichkeiten": [],
+            "Antwort": ""
+        }
+    },
+    "musik":{
+        "1":{
+            "erste_ausgabe": "",
+            "Frage": "",
+            "Audio": "",
+            "Antwortmoeglichkeiten": [],
+            "Antwort": ""
+        }
+
+    }
+}
