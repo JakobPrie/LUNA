@@ -43,7 +43,7 @@ def get_text(luna, text):
                                 summand += 1
                             except TypeError:
                                 ausgabe = ausgabe
-                except ValueError or TypeError:
+                except (ValueError, TypeError):
                     summand = 2
                     for i, w in satz.items():
                         try:

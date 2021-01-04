@@ -16,7 +16,7 @@ def isValid(text):
 	elif 'lade' in text and 'video' in text and 'herunter' in text:
 		return True
 	else:
-		return True
+		return False
 
 	
 def handle(text, luna, profile):

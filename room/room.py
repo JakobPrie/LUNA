@@ -80,9 +80,7 @@ class Modules:
         return modules
 
 
-    def query_threaded(self, user, name, text, direct=False, origin_room=None, data=None): 
-                                                                                           
-                                                                                           
+    def query_threaded(self, user, name, text, direct=False, origin_room=None, data=None):
         if text == None:
             text = random.randint(0,1000000000)
             analysis = {}
@@ -268,7 +266,7 @@ class LUNA:
 
         audiofile = wave.open(DETECT_DONG, 'rb')
         chunk = 1024
-        frame_rate = audiofile.getframerate() * 2
+        frame_rate = audiofile.getframerate()
         
         format = {'format': 8,
                   'channels': 1,
@@ -695,6 +693,14 @@ class Modulewrapper_continuous:
 
     def start_module_and_confirm(self, user=None, name=None, text=None):
         return Luna.start_module(user, name, text)
+
+    def module_storage(self, module_name=None):
+            module_storage = Luna.local_storage.get("module_storage")
+            if module_name is None:
+                return module_storage
+            # ich bin jetz einfach mal so frei und faul und gehe davon aus, dass eine Modul-Name von einem Modul übergeben wird, das es auch wirklich gibt
+            else:
+                return module_storage[module_name]
 
     def translate(self, ttext, targetLang='de'):
         return Luna.translate(ttext, targetLang)

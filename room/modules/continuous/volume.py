@@ -13,7 +13,6 @@ def run(luna, profile):
 	stunde = datetime.datetime.now().hour
 	
 	if stunde >= 6 and stunde <= 22 and next_change == "higher":
-		print('--> Lautstärke wird erhöht!')
 		subprocess.Popen(lauter.split(' '))
 		luna.module_storage["next_change"] = "lower"
 	

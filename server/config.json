@@ -23,8 +23,11 @@
         "rooms": {},
         "LUNA_telegram_allowed_id_table": {},
         "rejected_telegram_messages": [],
-        "module_storage":{
-        }
+        "module_storage": {
+            "phillips_hue":{
+                "Bridge-IP": ""
+            }
+	    }
     },
     
     "use_facerec": false,

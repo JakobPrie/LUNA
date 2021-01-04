@@ -1,4 +1,4 @@
-b# Beschreibung
+# Beschreibung
 '''
 --- Timer ---
 Dieses Modul ermöglicht es einen Timer zu starten
