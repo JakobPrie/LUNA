@@ -60,169 +60,81 @@ class skills:
     def delete_duplications(self, array):
         return list(set(array))
 
-    """
-    def assamble_new_items(array, new_items):
+    def assamble_array(self, array1, array2):
         new_array = []
-        for item in new_items:
-            # Name des items von der Anzahl trennen
-            if len(item.split(' ')) > 1:
-                # Durch die 1 in der runden Klammer, wird nur beim ersten Space
-                # das Wort getrennt. Das ist daher von Vorteil, da wir so später
-                # beim Zusammenfügen der Anzahl und des Namens nicht jedes Wort
-                # einzeln hinzufügen müssen
-                item_name = item.split(' ', 1)[1]
-            else:
-                item_name = item
-
-            for field in array:
-                if len(field.split(' ')) > 1:
-                    field_name = field.split(' ', 1)[1]
-                else:
-                    field_name = field
-
-                # Die folgende if-Abfrage ist notwendig, um auch "Banane" und "Bananen"
-                # zusammen zu zählen
-                weight = False
-                if field_name.lower().rstrip(field_name.lower()[-1]) == item_name.lower():
-                    item_name = item_name + "n"
-                if field_name.lower() == item_name.lower():
-                    # Festlegen der Anzahl des jeweiligen Feldes der beiden Arrays und
-                    # des letzten Buchstaben, den wir später noch brauchen werden
-                    n_anz = item.split(' ', 1)[0]
-                    try:
-                        n_item = item.split(' ', 1)[1]
-                    except:
-                        n_item = item
-                    a_anz = field.split(' ', 1)[0]
-
-                    if ('g ' in a_anz or 'kg ' in a_anz) and ('g ' in n_anz or 'kg ' in n_anz):
-                        print("Gewichtsindex gefunden")
-                        print("g or kg founded")
-                        weight = True
-                    if 'kg ' in field:
-                        a_anz = a_anz * 1000
-                        field = field.replace('kg ', ' ')
-                    if 'kg ' in item:
-                        n_anz = n_anz * 1000
-                        item = item.replace('kg ', ' ')
-                    print("a_anz und n_anz:")
-                    print(a_anz)
-                    print(n_anz)
-                field = field.replace('g ', ' ')
-                item = item.replace('g ', ' ')
-                print("Feld und item:")
-                print(field)
-                print(item)
-                print("\n")
-
-            last_letter = item[-1]
-            # Bisher war die jeweilige Anzahl (z.B. 2) noch als String (also
-            # Zeichen) und nicht als int (also Zahl) gespeichert. Man kann
-            # aber nur mit Zahlen rechnen, daher versuche ich anschließend
-            # die Strings in Integer zu konvertieren. "try" wird benötigt,
-            # da zum Beispiel bei "Creme Legere" das 1. Feld nach dem split
-            # keine Zahl, sondern ein Wort ist
+        for item in array1:
+            value1, number1 = self.get_value_number(self, item)
             try:
-                n_anz = int(n_anz)
+                item1 = item.split(" ", 1)[1].lower()
             except:
-                # keine Zahl? Dann gibt es von dem Item nur eines
-                n_anz = 1
-
-            try:
-                a_anz = int(a_anz)
-            except:
-                a_anz = 1
-
-            if type(n_anz) != int:
-                n_item = item
-
-            new_anz = n_anz + a_anz
-            if not weight:
-                print("------------> Es handelt sich ---- NICHT ------ um g or kg")
-                item = str(new_anz) + " " + n_item
-                if last_letter == "e":
-                    item = item + "n"
-            else:
-                print("------------> Es handelt sich um g or kg")
-                identifier = 'g '
-                if new_anz >= 1000:
-                    new_anz = new_anz / 1000
-                    identifier = 'kg '
-                item = str(new_anz) + identifier + n_item
-            print(item)
-
-
-        new_array.append(item)
-        # folgende Zeile löscht Dopplungen, die durch das Zusammenfügen von "Banane" und "Bananen" zu stande kommt
-        new_array = self.delete_duplications(new_array)
-
-        print(f"new_array: {new_array}")
-        return new_array
-        """
-
-    def assamble_new_items(self, array, new_items):
-        new_array = []
-        for item in new_items:
-            # Name des items von der Anzahl trennen
-            if len(item.split(' ')) > 1:
-                # Durch die 1 in der runden Klammer, wird nur beim ersten Space
-                # das Wort getrennt. Das ist daher von Vorteil, da wir so später
-                # beim Zusammenfügen der Anzahl und des Namens nicht jedes Wort
-                # einzeln hinzufügen müssen
-                item_name = item.split(' ', 1)[1]
-            else:
-                item_name = item
-
-            for field in array:
-                if len(field.split(' ')) > 1:
-                    field_name = field.split(' ', 1)[1]
+                item1 = item.lower()
+            for field in array2:
+                value2, number2 = self.get_value_number(self, field)
+                try:
+                    item2 = field.split(" ", 1)[1].lower()
+                except:
+                    item2 = field.lower()
+                # print(f"value1: {item1}, {number1}, {value1};    value2: {item2}, {number2}, {value2}")
+                if item1 == item2 or item1.rstrip(item1[-1]) == item2 or item1 == item2.rstrip(item2[-1]):
+                    if item1[-1] == "e":
+                        item1 += "n"
+                    if value1 == value2:
+                        final_value = value1
+                        final_number = number1 + number2
+                        if final_number >= 1000 and final_value == "g":
+                            final_value = "kg"
+                            final_number /= 1000
+                    else:
+                        final_value = ""
+                        final_number = -1
+                    if final_number != -1:
+                        new_array.append(str(final_number) + final_value + " " + item1.capitalize())
+                    else:
+                        new_array.append(item1.capitalize())
                 else:
-                    field_name = field
+                    if self.is_enthalten(self, item1, array2):
+                        new_array.append(item1.capitalize())
+                    if self.is_enthalten(self, item2, array1):
+                        new_array.append(item2.capitalize())
 
-                # Die folgende if-Abfrage ist notwendig, um auch "Banane" und "Bananen"
-                # zusammen zu zählen
-                if field_name.lower().rstrip(field_name.lower()[-1]) == item_name.lower():
-                    item_name = item_name + "n"
-                if field_name.lower() == item_name.lower():
-                    # Festlegen der Anzahl des jeweiligen Feldes der beiden Arrays und
-                    # des letzten Buchstaben, den wir später noch brauchen werden
-                    n_anz = item.split(' ', 1)[0]
-                    try:
-                        n_item = item.split(' ', 1)[1]
-                    except:
-                        n_item = item
-                    a_anz = field.split(' ', 1)[0]
-                    last_letter = item[-1]
-                    # Bisher war die jeweilige Anzahl (z.B. 2) noch als String (also
-                    # Zeichen) und nicht als int (also Zahl) gespeichert. Man kann
-                    # aber nur mit Zahlen rechnen, daher versuche ich anschließend
-                    # die Strings in Integer zu konvertieren. "try" wird benötigt,
-                    # da zum Beispiel bei "Creme Legere" das 1. Feld nach dem split
-                    # keine Zahl, sondern ein Wort ist
-                    try:
-                        n_anz = int(n_anz)
-                    except:
-                        # keine Zahl? Dann gibt es von dem Item nur eines
-                        n_anz = 1
+        return self.delete_duplications(self, new_array)
 
-                    try:
-                        a_anz = int(a_anz)
-                    except:
-                        a_anz = 1
+    def is_enthalten(self, item, array):
+        item = item.lower()
+        valid = True
+        for position in array:
+            try:
+                item_position = position.split(" ", 1)[1].lower()
+            except:
+                item_position = position.lower()
+            if item_position == item or item_position.rstrip(item_position[-1]) == item or item_position == item.rstrip(item[-1]):
+                valid = False
+        return valid
 
-                    if type(n_anz) != int:
-                        n_item = item
-
-                    new_anz = n_anz + a_anz
-                    item = str(new_anz) + " " + n_item
-
-                    if last_letter == "e":
-                        item = item + "n"
-
-            new_array.append(item)
-            # folgende Zeile löscht Dopplungen, die durch das Zusammenfügen von "Banane" und "Bananen" zu stande kommt
-            new_array = self.delete_duplications(new_array)
-        return new_array
+    def get_value_number(self, item):
+        first_value = item.split(' ', 1)[0]
+        value = ""
+        number = 1
+        if "kg" in first_value:
+            try:
+                first_value.replace("kg", "")
+                value = "g"
+                number = int(first_value) * 1000
+            except:
+                pass
+        elif "g" in first_value:
+            try:
+                first_value1 = first_value.replace("g", "")
+                value = "g"
+                number = int(first_value1)
+            except:
+                pass
+        else:
+            try:
+                number = int(first_value)
+            except:
+                pass
+        return value, number
 
     def assamble_array(self, array):
         print(f"Beim Start von assamble_array: {array}")
