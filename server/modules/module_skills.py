@@ -60,7 +60,7 @@ class skills:
     def delete_duplications(self, array):
         return list(set(array))
 
-    def assamble_array(self, array1, array2):
+    def assamble_new_items(self, array1, array2):
         new_array = []
         for item in array1:
             value1, number1 = self.get_value_number(self, item)
