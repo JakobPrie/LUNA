@@ -129,6 +129,13 @@ class skills:
                 number = int(first_value1)
             except:
                 pass
+        elif "ml" in first_value:
+            try:
+                first_value = first_value.replace("ml", "")
+                value = "ml"
+                number = int(first_value)
+            except:
+                pass
         else:
             try:
                 number = int(first_value)
